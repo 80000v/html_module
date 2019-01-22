@@ -1,0 +1,12 @@
+﻿.btn{display:inline-block;width:120px;line-height:40px;padding:0 10px;font-size:16px;text-align:center;border:none;vertical-align:middle;cursor:pointer;color:#FFF;background-color:#E12D2D}
+.btn-lk-red{color:#F23939;background-color:#FFF;border:2px solid #F23939}
+.btn-lk-red:hover{color:#FFF;background-color:#F23939}
+.btn-red{color:#FFF;background-color:#F23939}
+.btn-red:hover{background-color:#F34848}
+.btn-dred{color:#FFF;background-color:#E12D2D}
+.btn-dred:hover{background-color:#EC3A3A}
+.btn-blue{color:#FFF;background-color:#08C}
+.btn-grey{color:#FFF;background-color:#999}
+.btn-grey:hover{background-color:#AEADAD}
+.btn-disabled{color:#FFF;background-color:#CCC;cursor:not-allowed}
+a.btn:hover{text-decoration:none}

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>日历</title>
+    
+    <script src="jquery-1.11.2.min.js"></script>
+    
+</head>
+<style type="text/css">
+    *{margin:0;padding: 0;font-family: '微软雅黑';}
+body{background: #fff;}
+ul{list-style: none;}
+a{text-decoration: none;color:#333;}
+img{border:none;}
+.fl{float:left;_display:inline;}
+.fr{float:right;_display:inline;}
+.pr{position: relative;}
+.pa{position: absolute;}
+.none{display: none;}
+.clearfix:before,.clearfix:after{content:"";display:table;}
+.clearfix:after{clear:both;}
+.clearfix{*zoom:1;}
+
+.main{width:385px;margin:20px auto;padding:10px;border:2px #57abff solid;color:#333;}
+.menu{font-size: 14px;}
+.select{width:80px;height:25px;line-height:25px;border:1px #d8d8d8 solid;cursor: default;}
+.select-text{text-align: center;}
+.select-text:hover{box-shadow: 1px 1px 0 0 #d8d8d8 inset;}
+.select div.current{box-shadow: 1px 1px 0 0 #d8d8d8 inset;}
+.month{border-left:none;border-right:none;}
+.select-list{left:-1px;top:25px;width: 80px;max-height:360px;background: #fff;border:1px #d8d8d8 solid;overflow: auto;}
+.select-list li{height: 30px;line-height: 30px;text-indent: 10px;cursor: pointer;}
+.select-list li.selected{background: #d8d8d8;}
+.select-list li.on{background: #d8d8d8;}
+.select-prev,.select-next{width:25px;height: 25px;margin-left:10px;line-height: 25px;text-align: center;border:1px #d8d8d8 solid;cursor: pointer;}
+.select-next{margin:0;}
+.select-today{width:80px;height: 25px;margin-left:10px;line-height: 25px;text-align: center;border:1px #d8d8d8 solid;cursor: pointer;}
+.select-prev:hover,.select-next:hover,.select-today:hover{border:1px #57abff solid;}
+.select-prev:active,.select-next:active,.select-today:active{background: #f0f0f0;box-shadow: 1px 1px 1px #c7c7c7 inset;}
+.time{height: 25px;margin-left:10px;line-height: 25px;}
+.title{height:35px;font-size: 16px;margin-top:10px;border-top:1px #57abff solid;}
+.title li{float:left;width:55px;height:35px;line-height: 35px;text-align: center;}
+.table li{float:left;width:55px;height:55px;border-bottom: 1px #c8cacc solid;font-size: 18px;cursor: pointer;}
+.table li span{display: block;width:51px;height:51px;line-height: 51px;text-align: center;border:2px #fff solid;}
+.table li span.on{border:2px #fb0 solid;}
+.table li span.today{background: #fb0;border:2px #fb0 solid;color:#fff;}
+</style>
+<body>
+    <div class="main clearfix">
+        <div class="menu clearfix">
+            <div class="select fl pr">
+                <ul class="select-list select-year pa none">
+                    <li value="2015">2015年</li>
+                    <li value="2016">2016年</li>
+                    <li value="2017">2017年</li>
+                </ul>
+                <div class="select-text year"><span class="year-text" value="2016">2016年</span>▼</div>
+            </div>
+            <a class="select-prev fl" href="javascript:;">&lt;</a>
+            <div class="select month fl pr">
+                <ul class="select-list pa none">
+                    <li value="1">1月</li>
+                    <li value="2">2月</li>
+                    <li value="3">3月</li>
+                    <li value="4">4月</li>
+                    <li value="5">5月</li>
+                    <li value="6">6月</li>
+                    <li value="7">7月</li>
+                    <li value="8">8月</li>
+                    <li value="9">9月</li>
+                    <li value="10">10月</li>
+                    <li value="11">11月</li>
+                    <li value="12">12月</li>
+                </ul>
+                <div class="select-text"><span class="month-text" value="1">1月</span>▼</div>
+            </div>
+            <a class="select-next fl" href="javascript:;">&gt;</a>
+            <a class="select-today fl" href="javascript:;">返回今天</a>
+            <div class="time fl">10:40:05</div>
+        </div>
+        <ul class="title">
+            <li>日</li><li>一</li><li>二</li><li>三</li><li>四</li><li>五</li><li>六</li>
+        </ul>
+        <ul class="table">
+            <li><span>1</span></li><li><span>2</span>
+        </ul>
+    </div>
+</body>
+<script type="text/javascript">
+    $(function(){
+    var init = {
+        startYear: 1900, //年份列表开始年
+        endYear: 2050 //年份列表结束年
+    };
+    var fun = {
+        init: function(){
+            this.showYear();
+            this.timeBox();
+            this.dateBox();
+        },
+        showYear: function(){ //循环年列表
+            var startYear = init.startYear,
+                endYear = init.endYear,
+                yearHtml = '';
+            for(;startYear <= endYear; startYear++){
+                yearHtml += '<li value="'+startYear+'">'+startYear+'年</li>';
+            };
+            $('.select-year').html(yearHtml);
+        },
+        timeBox: function(){ //系统时间
+            (function(){
+                var date = new Date();
+                var h = date.getHours(),
+                    m = date.getMinutes(),
+                    s = date.getSeconds();
+                var time = h + ':' + m + ':' + s;
+                var time = fun.timeBu(time);
+                $('.time').html(time);
+                setTimeout(arguments.callee, 1000);
+            })();
+        },
+        timeBu: function(val){
+            var arr = val.split(':');
+            for(var i = 0; i < arr.length; i++){
+                if(arr[i] < 10){
+                    arr[i] = '0' + arr[i];
+                }
+            };
+            return arr.join(':');
+        },
+        showDate: function(year, month){ //日历展示
+            //改变下拉
+            $('.year-text').text(year + '年').attr('value', year);
+            $('.month-text').text(month + '月').attr('value', month);
+            $('.select-list li').removeClass('selected');
+            //为当前已经默认的年份和有份标为选中
+            $('.select-list li').addClass(function(i){
+                var value = $(this).attr('value');
+                if(value == year || value == month){
+                    return 'selected';
+                }
+            });
+
+            var setDate = new Date();
+            setDate.setFullYear(year); //设置年份
+            setDate.setMonth(month-1); //设置月份，因为系统的月份都是比真实的小1
+            setDate.setDate(1); //设置成当前月第一天
+
+            var num = setDate.getDay(); //得到本月第一天是星期几
+
+            setDate.setMonth(month); //设置成正确的真实月份
+            var lastDate = new Date(setDate.getTime() - 1000*60*60*24); //计算得到当前月最后一天的日期格式
+            var lastDay = lastDate.getDate(); //获取本月最后一天是几号
+
+            //利用得到的当前月总天数来循环出当前月日历
+            var html = '';
+            for(var i = 1; i <= lastDay; i++){
+                html += '<li><span>'+i+'</span></li>';
+            };
+            $('.table').html(html);
+
+            var first = $('.table li:first'),
+                w = first.outerWidth();
+            first.css('marginLeft', w * num + 'px'); //根据得到的本月第一天是周几得出第一个li所在的位置，从而排列好整个日历
+
+            var nowDate = new Date(), //得到系统当前的真实时间
+                nowYear = nowDate.getFullYear(),
+                nowMonth = nowDate.getMonth() + 1,
+                today = nowDate.getDate(); //获取当前是几号
+            if(nowYear == year && nowMonth == month){ //验证当前展示中是否包含今天
+                $('.table li').eq(today-1).find('span').addClass('today'); //标出今天
+            }
+            
+        },
+        dateBox: function(){
+            var date = new Date(),
+                year = date.getFullYear(), //获取当前是哪一年
+                month = date.getMonth() + 1; //获取当前月
+            
+            //初始化日历
+            fun.showDate(year, month);
+            
+        }
+    }
+    fun.init(); //运行
+    //下拉选择
+    $('.select-text').on('click', function(e){
+        e.stopPropagation();
+        var self = $(this);
+        self.toggleClass('current');
+        self.parent().siblings('.select').find('.select-list').hide();
+        self.prev().toggle();
+        //点击是的年份时则始终保持已经选中的年在第一位
+        if(self.hasClass('year')){
+            $('.select-year').scrollTop(0);
+            var top = $('.select-year .selected').position().top;
+            $('.select-year').scrollTop(top);
+        }
+    });
+    //下拉悬浮
+    $('.select-list li').on({
+        'mouseenter': function(){
+            $(this).addClass('on');
+        },
+        'mouseleave': function(){
+            $(this).removeClass('on');
+        }
+    });
+    $(document).on('click', function(){
+        $('.select-list').hide();
+        $('.select-text').removeClass('current');
+    });
+    //切换年，月
+    $('.select-list li').on('click', function(){
+        if($(this).hasClass('selected')){ //如果是已经选中的则不用在重新初始化日历
+            return;
+        };
+        var self = $(this),
+            text = self.text(),
+            value = self.attr('value');
+        self.addClass('selected').siblings().removeClass('selected');
+        self.parent().next().find('span').text(text).attr('value', value);
+        var year = $('.year-text').attr('value'),
+            month = $('.month-text').attr('value');
+        fun.showDate(year, month);
+    });
+
+    //返回今天
+    $('.select-today').on('click', function(){
+        
+        fun.dateBox();
+    });
+
+    //日期选择
+    //日期悬浮时
+    $('body').on({
+        'mouseenter': function(){
+            $(this).addClass('on');
+        },
+        'mouseleave': function(){
+            $(this).removeClass('on');
+        }
+    }, '.table span');
+    //点击日期
+    $('body').on('click', '.table span', function(){
+        var year = $('.year-text').attr('value'),
+            month = $('.month-text').attr('value'),
+            day = $(this).text();
+        var date = year + '-' + month + '-' + day;
+        alert(date);
+    });
+
+    //前一个月
+    $('.select-prev').on('click', function(){
+        var year = parseInt($('.year-text').attr('value')),
+            month = parseInt($('.month-text').attr('value'));
+        if(month - 1 > 0){
+            month = month - 1;
+        }else{
+            month = 12;
+            year = year - 1;
+            if(year < init.startYear){
+                return;
+            }
+        };
+        fun.showDate(year, month);
+    });
+    //后一个月
+    $('.select-next').on('click', function(){
+        var year = parseInt($('.year-text').attr('value')),
+            month = parseInt($('.month-text').attr('value'));
+        if(month + 1 <= 12){
+            month = month + 1;
+        }else{
+            month = 1;
+            year = year + 1;
+            if(year > init.endYear){
+                return;
+            }
+        };
+        fun.showDate(year, month);
+    })
+
+})
+</script>
+</html>

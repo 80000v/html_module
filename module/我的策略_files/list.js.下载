@@ -1,0 +1,274 @@
+﻿//=======================首页新闻记录
+var news_list = function () {
+    var type_id = $("#type_id").val();
+    $('#pager').sjAjaxPager({
+        url: "/tools/list_ajax.ashx?act=news_list",
+        pageSize: 5,
+        pageIndex: 1,
+        searchParam: { type_id: type_id },
+        beforeSend: function () { },
+        success: function (data) {
+            $("#pager").show();
+            var strHtml = "";
+            $.each(data.items, function (i, v) {
+                strHtml += "<dl class='help-item'>";
+                strHtml += " <dt><a href='/news_d.aspx?id=" + v.id + "' target='_blank'>" + v.title + "</a><span class='time'>" + v.call_index + "</span></dt>";
+                strHtml += "</dl>";
+            });
+            if (data.total < 1) {
+                strHtml += "<dl class='help-item'><dt>暂无记录</dt></dl>";
+            }
+            $('#list_data').html(strHtml);
+        },
+        complete: function () {
+        }
+    });
+}
+//=======================充值记录
+var pay_list = function () {
+    var type_id = $("#type_id").val();
+    $('#pager').sjAjaxPager({
+        url: "/tools/user_opt_ajax.ashx?act=pay_list",
+        pageSize: 10,
+        pageIndex: 1,
+        searchParam: { type_id: type_id },
+        beforeSend: function () { },
+        success: function (data) {
+            $("#pager").show();
+            var strHtml = "";
+            $.each(data.items, function (i, v) {
+                strHtml += "<tr>";
+                strHtml += "<td>&nbsp;" + v.timer + "</td>";
+                strHtml += "<td>" + v.remark + "</td>";
+                strHtml += "<td>" + v.recharge_money + "</td>";
+                strHtml += "<td>" + v.recharge_value + "</td>";
+                strHtml += "<td>" + v.statusr + "</td>";
+                strHtml += " </tr>";
+            });
+            if (data.total < 1) {
+                strHtml += "<tr><td colspan='5' class='txt-c grey'>暂无记录</td></tr>";
+            }
+            $('#list_data').html(strHtml);
+        },
+        complete: function () {
+        }
+    });
+}
+//=======================提现记录
+var cash_list = function () {
+    var type_id = $("#type_id").val();
+    $('#pager').sjAjaxPager({
+        url: "/tools/user_opt_ajax.ashx?act=cash_list",
+        pageSize: 10,
+        pageIndex: 1,
+        searchParam: { type_id: type_id },
+        beforeSend: function () { },
+        success: function (data) {
+            $("#pager").show();
+            var strHtml = "";
+            $.each(data.items, function (i, v) {
+                strHtml += "<tr>";
+                strHtml += "<td>&nbsp;" + v.timer + "</td>";
+                strHtml += "<td>" + v.money_apply + "</td>";
+                strHtml += "<td>" + v.money_get + "</td>";
+                strHtml += "<td>" + v.statusr + "</td>";
+                strHtml += " </tr>";
+            });
+            if (data.total < 1) {
+                strHtml += "<tr><td colspan='4' class='txt-c grey'>暂无记录</td></tr>";
+            }
+            $('#list_data').html(strHtml);
+        },
+        complete: function () {
+        }
+    });
+}
+
+//=======================资金记录
+var money_list = function(deal_type) {
+    $(".deal_type span").removeClass("curr");
+    $(".deal_type span").eq(deal_type).addClass("curr");
+    var type_id = $("#type_id").val(), service_type = $("#service_type").val();
+    $('#pager').sjAjaxPager({
+        url: "/tools/user_opt_ajax.ashx?act=money_list",
+        pageSize: 10,
+        pageIndex: 1,
+        searchParam: { type_id: type_id, service_type: service_type, deal_type: deal_type },
+        beforeSend: function() {},
+        success: function(data) {
+            $("#pager").show();
+            var strHtml = "";
+            $.each(data.items, function(i, v) {
+                strHtml += "<tr>";
+                strHtml += "<td>&nbsp;" + v.timer + "</td>";
+                strHtml += "<td>" + (v.service_type == 67 ? v.remark : (v.service_type == 5 ? v.remark : v.statusr)) + "</td>";
+                strHtml += "<td " + (v.money_get > 0 ? "class='txt-up'" : "class='txt-down'") + ">"
+                    + (v.money_get > 0 ? "+" + fMoney(v.money_get, 3) : "")
+                    + (v.money_pay > 0 ? "&nbsp;<span class='txt-down'>-" + fMoney(v.money_pay, 3) + "</span>" : "") + "</td>";
+                strHtml += "<td>" + fMoney(v.money_total, 3) + "</td>";
+                strHtml += " </tr>";
+            });
+            if (data.total < 1) {
+                strHtml += "<tr><td colspan='4' class='txt-c grey'>暂无记录</td></tr>";
+            }
+            $('#list_data').html(strHtml);
+        },
+        complete: function() {
+        }
+    });
+}
+
+//=======================点卖持仓
+var stock_list_sale = function (type_id) {
+    $('#pager').sjAjaxPager({
+        url: "/tools/user_opt_ajax.ashx?act=stock_list_sale",
+        pageSize: 600,
+        pageIndex: 1,
+        searchParam: { type_id: type_id },
+        beforeSend: function () { },
+        success: function (data) {
+            $("#pager").show();
+            if (data.total > 0) {
+                $('#list_data').html(data.items);
+                if (data.money_delay > 0) {
+                    $(".money_delay").html("<span class='pr20'>今日递延费总额：" + data.money_delay + " 元</span>账户余额：" + data.money_balance + " 元");
+                    $(".money_delay").show();
+                }
+            } else {
+                var strHtml = "<tr><td colspan='9' class='txt-c grey'>";
+                strHtml += "<div style='padding-top: 20px; text-align: center;'>";
+                strHtml += "<p class='pb20'>暂时没有等待委托卖出的A股</p>";
+                strHtml += "<p><button class='btn btn-dred' style='width: 150px;' onclick='gourl(\"/trans/buy.aspx\");'>立即去创建策略</button></p>";
+                strHtml += "</div></td></tr>";
+                $('#list_data').html(strHtml);
+            }
+        },
+        complete: function () {
+        }
+    });
+}
+var stock_list_sale22 = function (type_id,pageIndex) {
+    $('#pager').sjAjaxPager({
+        url: "/tools/user_opt_ajax.ashx?act=stock_list_sale",
+        pageSize: 10,
+        pageIndex: pageIndex,
+        searchParam: { type_id: type_id, isgetnew: 1},
+        beforeSend: function () { },
+        success: function (data) {
+            $("#pager").show();
+            if (data.total > 0) {
+                $('#list_data').html(data.items);
+                if (data.money_delay > 0) {
+                    $(".money_delay").html("<span class='pr20'>今日递延费总额：" + data.money_delay + " 元</span>账户余额：" + data.money_balance + " 元");
+                    $(".money_delay").show();
+                }
+            } else {
+                var strHtml = "<tr><td colspan='8' class='txt-c grey'>";
+                strHtml += "<div style='padding-top: 20px; text-align: center;'>";
+                strHtml += "<p class='pb20'>暂时没有等待委托卖出的A股</p>";
+                strHtml += "<p><button class='btn btn-dred' style='width: 150px;' onclick='gourl(\"/trans/buy.aspx\");'>立即去创建策略</button></p>";
+                strHtml += "</div></td></tr>";
+                $('#list_data').html(strHtml);
+            }
+        },
+        complete: function () {
+        }
+    });
+}
+//=======================历史交易记录
+var deal_his_list = function (type_id) {
+    $('#pager').sjAjaxPager({
+        url: "/tools/user_opt_ajax.ashx?act=deal_his_list",
+        pageSize: 10,
+        pageIndex: 1,
+        searchParam: { type_id: type_id },
+        beforeSend: function () { },
+        success: function (data) {
+            $("#pager").show();
+            if (data.total > 0) {
+                $('#list_data').html(data.items);
+            } else {
+                $('#list_data').html("<tr><td colspan='7' class='txt-c grey'>暂无记录</td></tr>");
+            }
+        },
+        complete: function () {
+        }
+    });
+}
+
+//=======================委托&委托撤单记录
+var cancel_list = function (type_id) {
+    $('#pager').sjAjaxPager({
+        url: "/tools/user_opt_ajax.ashx?act=cancel_list",
+        pageSize: 30,
+        pageIndex: 1,
+        searchParam: { type_id: type_id },
+        beforeSend: function () { },
+        success: function (data) {
+            $("#pager").show();
+            if (data.total > 0) {
+                $('#list_data').html(data.items);
+            } else {
+                $('#list_data').html("<tr><td colspan='9' class='txt-c grey'>暂无记录</td></tr>");
+            }
+        },
+        complete: function () {
+        }
+    });
+}
+
+//=======================邀请会员记录
+var invite_list = function () {
+    var type_id = $("#type_id").val();
+    $('#pager').sjAjaxPager({
+        url: "/tools/user_opt_ajax.ashx?act=invite_list",
+        pageSize: 10,
+        pageIndex: 1,
+        searchParam: { type_id: type_id },
+        beforeSend: function () { },
+        success: function (data) {
+            $("#pager").show();
+            var strHtml = "";
+            $.each(data.items, function (i, v) {
+                strHtml += "<tr>";
+                strHtml += "<td>&nbsp;" + v.timer + "</td>";
+                strHtml += "<td>" + v.user_name + "</td>";
+                strHtml += "<td>" + v.phone_mobile + "</td>";
+                strHtml += " </tr>";
+            });
+            if (data.total < 1) {
+                strHtml += "<tr><td colspan='3' class='txt-c grey'>暂无记录</td></tr>";
+            }
+            $('#list_data').html(strHtml);
+        },
+        complete: function () {
+        }
+    });
+}
+//=======================服务费记录
+var money_ref_list = function () {
+    $('#pager').sjAjaxPager({
+        url: "/tools/user_opt_ajax.ashx?act=money_list",
+        pageSize: 10,
+        pageIndex: 1,
+        searchParam: { type_id: 7, service_type: 1, deal_type: 1 },
+        beforeSend: function () { },
+        success: function (data) {
+            $("#pager").show();
+            var strHtml = "";
+            $.each(data.items, function (i, v) {
+                strHtml += "<tr>";
+                strHtml += "<td>&nbsp;" + v.timer + "</td>";
+                strHtml += "<td " + (v.money_get > 0 ? "class='txt-up'" : "class='txt-down'") + ">" + (v.money_get > 0 ? "+" + fMoney(v.money_get, 2) : "-" + fMoney(v.money_pay, 2)) + "</td>";
+                strHtml += "<td style='line-height: 20px;'>" + v.remark + "</td>";
+                strHtml += " </tr>";
+            });
+            if (data.total < 1) {
+                strHtml += "<tr><td colspan='3' class='txt-c grey'>暂无记录</td></tr>";
+            }
+            $('#list_ref_data').html(strHtml);
+        },
+        complete: function () {
+        }
+    });
+}

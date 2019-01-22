@@ -1,0 +1,1346 @@
+$(function () {
+    login_status();
+    money_balance();
+    $(".myAccount").hover(function () {
+        $(this).find(".user-info").show();
+    }, function () {
+        $(this).find(".user-info").hide();
+    });
+    $(".J_wxh").hover(function () {
+        $(this).find(".J_wxfwh").show();
+    }, function () {
+        $(this).find(".J_wxfwh").hide();
+        });
+});
+//======================登录状态================
+var login_status = function () {
+    $.get("/tools/user_ajax.ashx", { act: "loginstatus", t: new Date() }, function (data) {
+        var obj = eval('(' + data + ')');
+        if (obj.user_id > 0) {
+            $(".myAccount_name").html("您好！<a href='/user/index.aspx'>" + obj.phone_mobile + "</a>");
+            $(".myAccount").show();
+            $(".myAccount_name").show();
+            $(".ck_log").hide();
+            $(".spacer").hide();
+            $("#indexRegBox").hide();
+            $("#indexCenterBox").show();
+        } else {
+            $("#indexRegBox").show();
+            $("#indexCenterBox").hide();
+        }
+    });
+}
+//=======================退出登录
+function LoginOutAjax() {
+    $.ajax({
+        url: "/tools/user_ajax.ashx?act=loginout",
+        dataType: "text",
+        type: "GET",
+        timeout: 6000,
+        cache: false,
+        success: function (data) {
+            window.location.href = "/default.aspx";
+        }
+    });
+}
+//======================账户余额================
+var money_balance = function () {
+    $.get("/tools/user_opt_ajax.ashx", { act: "money_balance", t: new Date() }, function (data) {
+        $(".currbalance").html(data);
+    });
+}
+function gourl(url) {
+    location.href = url;
+}
+//=======================延时加载
+var delay = (function () {
+    var timer = 0;
+    return function (callback, time) {
+        clearTimeout(timer);
+        timer = setTimeout(callback, time);
+    };
+})();
+//=============================切换验证码======================================
+function ToggleCode(obj, codeurl) {
+    $(obj).attr("src", codeurl + "?time=" + Math.random());
+}
+//======================提示框================
+var TipMsg = {
+    showTimer: null,
+    popUp: function (icon, msg, abort, callback) {/*true或false,"提示",true为有取消按钮*/
+        var cName;
+        var callback = callback || function () { };
+        if (icon == true) { cName = "true" }
+        else if (icon == false) { cName = "false" } else { cName = "hide" }
+        $("body").append('<div id="mark"></div><div id="alert"><h3>Tips<a href="javascript:;" onclick="TipMsg.closePop()"></a></h3><div class="tip_msg"><i class="' + cName + '"></i><div class="msg_con">' + msg + '</div></div><div class="al_btn"><button id="config">确定</button><button onclick="TipMsg.closePop()" id="abort">取消</button></div></div>');
+        if (abort == true) { $("#abort").show(); }
+        var win = $(window), off = $("#alert");
+        off.css({ "left": (win.width() - off.width()) / 2 });
+        $("#config").click(function () {
+            TipMsg.closePop(callback);
+        });
+    },
+    closePop: function (callback) {
+        $("#mark,#alert").remove();
+        if (callback) { callback(); }
+    },
+    position: function (msg, tag, timer, leftplus, topplus, direction) {/*"提示",$(this),2000,向左偏移,向上偏移,方向*/
+        clearTimeout(this.showTimer);
+        if ($("#tipBox").length == 0) { $("body").append('<div id="tipBox"></div>'); } else { $("#tipBox").show(); }
+        var tagOff = tag.offset() || tag.position(), the = $("#tipBox");
+        the.html('<div>' + msg + '</div>')
+        var h = the.height() + 30;
+        var _direction = direction || "up";
+        if (leftplus == null) { leftplus = 0 }
+        if (topplus == null) { topplus = 0 }
+        if (_direction == "up") {
+            the.css({ top: tagOff.top - h - 20, left: tagOff.left + leftplus }).removeClass("downTip leftTip rightTip");
+            the.fadeIn(300).animate({ top: tagOff.top - h + topplus }, 300);
+        } else if (_direction == "down") {
+            the.css({ top: tagOff.top + tag.outerHeight() + 10, left: tagOff.left + leftplus }).addClass("downTip");
+            the.fadeIn(300).animate({ top: tagOff.top + tag.outerHeight() + topplus }, 300);
+        } else if (_direction == "left") {
+            the.css({ top: tagOff.top + topplus, left: tagOff.left - tag.outerWidth() - 10 }).addClass("leftTip");
+            the.fadeIn(300).animate({ left: tagOff.left - tag.outerWidth() - 10 + leftplus }, 300);
+        } else if (_direction == "right") {
+            the.css({ top: tagOff.top + topplus, left: tagOff.left + tag.outerWidth() + 10 + leftplus }).addClass("rightTip");
+            the.fadeIn(300).animate({ left: tagOff.left + tag.outerWidth() + 10 + leftplus }, 300);
+        }
+        if (timer != -1) {
+            the.hover(function () { clearTimeout(TipMsg.showTimer); }, function () {
+                TipMsg.showTimer = setTimeout(function () {
+                    the.fadeOut(300, function () { the.remove(); });
+                }, timer);
+            });
+            TipMsg.showTimer = setTimeout(function () {
+                the.fadeOut(300, function () { the.remove(); });
+            }, timer);
+        }
+    },
+    Dialog: function (icon, msg, timer) {/*true或false,"提示",时间*/
+        var cName = icon == true ? "true" : "false";
+        $("body").append('<div id="mark"></div><div id="automsg"><i class="' + cName + '"></i><span>' + msg + '</span></div>');
+        var win = $(window), the = $("#automsg");
+        the.css({ left: (win.width() - the.width()) / 2, top: (win.height() - the.height()) / 2 });
+        setTimeout(function () { $("#mark,#automsg").remove(); }, timer);
+    }
+};
+//不四舍五入保留2位小数
+function toFixed2(num) {
+    return parseFloat(num.toString().replace(/(\.\d{2})\d+$/, "$1"));
+}
+/**
+ * 将数值格式化成类金额形式,逗号隔开及小数位
+ * @param num 要转换的数值
+ * @param n 要保留的小数位数
+ * @author byboating
+ */
+function fMoney(num, n) {
+    if (n != 0) {
+        n = n > 0 && n <= 20 ? n : 2;
+    }
+    var flag = '';
+
+    num = parseFloat((num + "").replace(/[^\d\.-]/g, "")).toFixed(n) + "";
+    if (num.indexOf('-') == 0) {
+        flag = '-';
+        num = num.split('-')[1];
+    }
+    var l = num.split(".")[0].split("").reverse(), r = num.split(".")[1];
+    var t = "";
+    for (var i = 0; i < l.length; i++) {
+        t += l[i] + ((i + 1) % 3 == 0 && (i + 1) != l.length ? "," : "");
+    }
+    if (n == 0) return t.split("").reverse().join("");
+    return flag + t.split("").reverse().join("") + "." + r;
+}
+/**
+ * 格式化金额 大于1万的以 万为单位，大于1千小于1万的用千表示
+ * @param number
+ */
+function fomatNumber(number) {
+    var result;
+    if (1000 <= parseInt(number) && parseInt(number) < 10000) {
+        result = parseInt(number) / 1000 + "千";
+    } else if (100 <= parseInt(number) && parseInt(number) < 1000) {
+        result = parseInt(number) / 100 + "百";
+    }
+    else if (10000 <= parseInt(number)) {
+        result = parseInt(number) / 10000 + "万";
+    }
+    else if (100000000 <= parseInt(number)) {
+        result = parseInt(number) / 100000000 + "亿";
+    }
+    else {
+        result = number + "元";
+    }
+    return result;
+}
+/* 判断金额框是否输入的是合法的数字*/
+function validateMoney(a) {
+    var reNum = /^(([1-9]\d*)|0)(\.(\d){1,2})?$/;
+    if (!reNum.test($(a).val())) {
+        $(a).val("");
+    } else {
+        if (parseFloat($(a).val()) > parseFloat($(a).attr("maxValue"))) {
+            $(a).val($(a).attr("maxValue"));
+        }
+    }
+}
+//======================来源网址
+function getUrlParam(name) { var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); var r = window.location.search.substr(1).match(reg); if (r != null) return unescape(r[2]); return '/'; }
+//======================切换验证码
+function ToggleCode(obj, codeurl) { $(obj).attr("src", codeurl + "?time=" + Math.random()); }
+/*验证银行卡号*/
+//银行卡号校验
+//Description:  银行卡号Luhm校验
+//Luhm校验规则：16位银行卡号（19位通用）:
+// 1.将未带校验位的 15（或18）位卡号从右依次编号 1 到 15（18），位于奇数位号上的数字乘以 2。
+// 2.将奇位乘积的个十位全部相加，再加上所有偶数位上的数字。
+// 3.将加法和加上校验位能被 10 整除。
+function bankcardCheck(bankno) {
+    if (bankno.length < 16 || bankno.length > 19) {
+        //$("#banknoInfo").html("银行卡号长度必须在16到19之间");
+        return false;
+    }
+    var num = /^\d*$/;  //全数字
+    if (!num.exec(bankno)) {
+        //$("#banknoInfo").html("银行卡号必须全为数字");
+        return false;
+    }
+    //开头6位
+    var strBin = "10,18,30,35,37,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,58,60,62,65,68,69,84,87,88,94,95,98,99";
+    if (strBin.indexOf(bankno.substring(0, 2)) == -1) {
+        //$("#banknoInfo").html("银行卡号开头6位不符合规范");
+        return false;
+    }
+
+    var lastNum = bankno.substr(bankno.length - 1, 1);//取出最后一位（与luhm进行比较）
+    var first15Num = bankno.substr(0, bankno.length - 1);//前15或18位
+    var newArr = new Array();
+    for (var i = first15Num.length - 1; i > -1; i--) {    //前15或18位倒序存进数组
+        newArr.push(first15Num.substr(i, 1));
+    }
+    var arrJiShu = new Array();  //奇数位*2的积 <9
+    var arrJiShu2 = new Array(); //奇数位*2的积 >9
+    var arrOuShu = new Array();  //偶数位数组
+    for (var j = 0; j < newArr.length; j++) {
+        if ((j + 1) % 2 == 1) {//奇数位
+            if (parseInt(newArr[j]) * 2 < 9)
+                arrJiShu.push(parseInt(newArr[j]) * 2);
+            else
+                arrJiShu2.push(parseInt(newArr[j]) * 2);
+        }
+        else //偶数位
+            arrOuShu.push(newArr[j]);
+    }
+    var jishu_child1 = new Array();//奇数位*2 >9 的分割之后的数组个位数
+    var jishu_child2 = new Array();//奇数位*2 >9 的分割之后的数组十位数
+    for (var h = 0; h < arrJiShu2.length; h++) {
+        jishu_child1.push(parseInt(arrJiShu2[h]) % 10);
+        jishu_child2.push(parseInt(arrJiShu2[h]) / 10);
+    }
+    var sumJiShu = 0; //奇数位*2 < 9 的数组之和
+    var sumOuShu = 0; //偶数位数组之和
+    var sumJiShuChild1 = 0; //奇数位*2 >9 的分割之后的数组个位数之和
+    var sumJiShuChild2 = 0; //奇数位*2 >9 的分割之后的数组十位数之和
+    var sumTotal = 0;
+    for (var m = 0; m < arrJiShu.length; m++) {
+        sumJiShu = sumJiShu + parseInt(arrJiShu[m]);
+    }
+    for (var n = 0; n < arrOuShu.length; n++) {
+        sumOuShu = sumOuShu + parseInt(arrOuShu[n]);
+    }
+    for (var p = 0; p < jishu_child1.length; p++) {
+        sumJiShuChild1 = sumJiShuChild1 + parseInt(jishu_child1[p]);
+        sumJiShuChild2 = sumJiShuChild2 + parseInt(jishu_child2[p]);
+    }
+    //计算总和
+    sumTotal = parseInt(sumJiShu) + parseInt(sumOuShu) + parseInt(sumJiShuChild1) + parseInt(sumJiShuChild2);
+    //计算Luhm值
+    var k = parseInt(sumTotal) % 10 == 0 ? 10 : parseInt(sumTotal) % 10;
+    var luhm = 10 - k;
+    if (lastNum == luhm) {
+        //$("#banknoInfo").html("Luhm验证通过");
+        return true;
+    }
+    else {
+        //$("#banknoInfo").html("银行卡号必须符合Luhm校验");
+        return true;
+    }
+}
+//==========================验证身份证
+function ValidateIdCard(sId) {
+    var aCity = { 11: "北京", 12: "天津", 13: "河北", 14: "山西", 15: "内蒙古", 21: "辽宁", 22: "吉林", 23: "黑龙江 ", 31: "上海", 32: "江苏", 33: "浙江", 34: "安徽", 35: "福建", 36: "江西", 37: "山东", 41: "河南", 42: "湖北 ", 43: "湖南", 44: "广东", 45: "广西", 46: "海南", 50: "重庆", 51: "四川", 52: "贵州", 53: "云南", 54: "西藏 ", 61: "陕西", 62: "甘肃", 63: "青海", 64: "宁夏", 65: "新疆", 71: "台湾", 81: "香港", 82: "澳门", 91: "国外 " }
+    var iSum = 0;
+    var info = "";
+    sId = sId.replace(/x$/i, "a");
+    if (aCity[parseInt(sId.substr(0, 2))] == null) { return false };
+    sBirthday = sId.substr(6, 4) + "-" + Number(sId.substr(10, 2)) + "-" + Number(sId.substr(12, 2));
+    var d = new Date(sBirthday.replace(/-/g, "/"))
+    if (sBirthday != (d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate())) { return false };
+    for (var i = 17; i >= 0; i--) iSum += (Math.pow(2, i) % 11) * parseInt(sId.charAt(17 - i), 11)
+    if (iSum % 11 != 1) { return false };
+    return true;
+}
+//=======================验证手机
+function ValidateMobile(mobile) {
+    var ismobi = /^(((1[0-9]{2}))+\d{8})$/.test(mobile);
+    if (!ismobi || isNaN(mobile) || mobile.length != 11) {
+        return false;
+    }
+    return true;
+}
+//======================验证邮箱
+function ValidateEmail(email) {
+    var isemail = /^([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,3}$/.test(email);
+    if (!isemail) {
+        return false;
+    }
+    return true;
+}
+//验证QQ号码5-13位
+function ValidateQQ(qq) {
+    var filter = /^\s*[.0-9]{5,13}\s*$/;
+    if (!filter.test(qq)) {
+        return false;
+    } else {
+        return true;
+    }
+}
+//======================验证字符格式
+function ValidateChar(str) {
+    var isok = /^\w{6,24}$/.test(str);   /*字母数字下划线验证*/
+    if (!isok || isNaN(isok)) {
+        return false;
+    }
+    return true;
+}
+//======================验证数字格式
+function isNumber(s) {
+    var reg = new RegExp("^[0-9]*$");
+    if (!reg.test(s)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+/**
+ * tab切换
+ * @param name
+ * @param cur
+ * @param num
+ */
+function setTab(name, cur, num) {
+    for (var i = 1; i <= num; i++) {
+        var nav = $("#" + name + i);
+        var con = $("#con_" + name + "_" + i);
+        i == cur ? nav.addClass("curr") : nav.removeClass("curr");
+        i == cur ? con.removeClass("hide").addClass("block") : con.addClass("hide").removeClass("block");
+    }
+}
+//=======================快速补加金额
+var money_ck = function (qk, money) {
+    $("#" + qk).val(money);
+}
+//=======================登录
+function login() {
+    var url = getUrlParam("url"), mobile = $("#mobile").val(), pwd = $("#pwd").val(), autologin = 0;
+    if ($('#autologin').is(':checked')) {
+        autologin = 1;
+    }
+    /*电话验证*/
+    if (!ValidateMobile(mobile)) {
+        $("#mobile").focus();
+        TipMsg.position("请输入正确的手机号码！", $("#mobile"), 2000, 0, 0);
+        return;
+    }
+    if ($("#pwd").val() == "") {
+        $("#pwd").focus();
+        TipMsg.position("请输入密码！", $("#pwd"), 2000, 0, 0);
+        return false;
+    }
+    $.ajax({
+        type: "POST",
+        url: $("#form1").attr("url"),
+        dataType: "json",
+        data: { "mobile": mobile, "pwd": pwd, "autologin": autologin },
+        timeout: 20000,
+        cache: false,
+        beforeSend: function (XMLHttpRequest) {
+            TipMsg.position("正在登录中...", $("#btnSubmit"), 2000, 0, 0);
+            $("#btnSubmit").attr("disabled", true);
+        },
+        success: function (data, textStatus) {
+            if (data.status == "y") {
+                if (url == "/") {
+                    location.href = "/user/index.aspx";
+                } else {
+                    location.href = url;
+                }
+            } else {
+                TipMsg.position(data.info, $("#btnSubmit"), 2000, 0, 0);
+                $("#btnSubmit").attr("disabled", false);
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            TipMsg.position("状态：" + textStatus + "；出错提示：" + errorThrown, $("#btnSubmit"), 2000, 0, 0);
+            $("#btnSubmit").attr("disabled", false);
+        }
+    });
+}
+//=======================注册
+function reg() {
+    var url = getUrlParam("url"), mobile = $("#mobile").val(), pwd = $("#pwd").val(), pwd2 = $("#pwd2").val(),
+        code_mobile = $("#code_mobile").val(), ref_mobile = $("#ref_mobile").val(), channel_num = $("#channel_num").val(), rfeenceCode = $('#rfeenceCode').val();
+    /*电话验证*/
+    if (!ValidateMobile(mobile)) {
+        $("#mobile").focus();
+        TipMsg.position("请输入正确的手机号码！", $("#mobile"), 2000, 0, 0);
+        return;
+    }
+    if (!ValidateChar(pwd)) {
+        $("#pwd").focus();
+        TipMsg.position("密码由6-24位的字母数字或下划线组成！", $("#pwd"), 2000, 0, 0);
+        return;
+    }
+    if (pwd2 != pwd) {
+        $("#pwd2").focus();
+        TipMsg.position("两次输入密码不一致！", $("#pwd2"), 2000, 0, 0);
+        return;
+    }
+    if (code_mobile.length != 6) {
+        TipMsg.position("请输入正确的短信验证码！", $("#code_mobile"), 2000, 0, 0);
+        $("#code_mobile").focus();
+        return;
+    }
+    if (!$('#agree').is(':checked')) {
+        TipMsg.position("必须同意注册协议才能注册", $("#agree"), 2000, 0, 0);
+        $("#agree").focus();
+        return;
+    }
+    $.ajax({
+        type: "POST",
+        url: $("#form1").attr("url"),
+        dataType: "json",
+        data: { "mobile": mobile, "pwd": pwd, "pwd2": pwd2, code_mobile: code_mobile, ref_mobile: ref_mobile, channel_num: channel_num, rfeenceCode: rfeenceCode },
+        timeout: 20000,
+        cache: false,
+        beforeSend: function (XMLHttpRequest) {
+            $("#btnSubmit").attr("disabled", true);
+            TipMsg.position("正在注册，请稍候...", $("#btnSubmit"), 2000, 0, 0);
+        },
+        success: function (data, textStatus) {
+            if (data.status == "y") {
+                alert(data.info);
+                window.location.href = "/default.aspx";
+            } else {
+                TipMsg.position(data.info, $("#btnSubmit"), 2000, 0, 0);
+                $("#btnSubmit").attr("disabled", false);
+                $("#msgtips").text();
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            TipMsg.position("状态：" + textStatus + "；出错提示：" + errorThrown, $("#btnSubmit"), 2000, 0, 0);
+            $("#btnSubmit").attr("disabled", false);
+        }
+    });
+}
+function ck_reg() {
+    var mobile = $("#mobile").val();
+    if (mobile.length == 11) {
+        /*电话验证*/
+        if (!ValidateMobile(mobile)) {
+            TipMsg.position("请输入正确的手机号码！", $("#mobile"), 2000, 0, 0);
+            $("#mobile").focus();
+            return;
+        }
+        $.get("/tools/user_ajax.ashx", { act: "ck_reg", mobile: mobile }, function (data) {
+            var obj = eval('(' + data + ')');
+            if (obj.status == "n") {
+                TipMsg.position(obj.info, $("#mobile"), 2000, 0, 0); return;
+            }
+        });
+    }
+}
+//========================刷新消息
+function refreshmsg(id, t) {
+    if (t > 0) {
+        t--;
+        addCookie("refreshid", id, 4)//刷新的id
+        addCookie("refresht", t, 4)//刷新的时间
+        setTimeout("refreshmsg('" + id + "'," + t + ");", 1000);
+        $("#" + id).val(t + "秒后重发");
+        $("#" + id).attr("disabled", "disabled");
+    } else {
+        $("#" + id).val("重新发送");
+        $("#" + id).removeAttr("disabled");
+    }
+}
+function refreshmsg2(id, t) {
+    if (t > 0) {
+        t--;
+        addCookie("refreshid", id, 4)//刷新的id
+        addCookie("refresht", t, 4)//刷新的时间
+        setTimeout("refreshmsg2('" + id + "'," + t + ");", 1000);
+        $("#" + id).val(t + "秒后重发");
+        $("#" + id).attr("disabled", "disabled");
+    } else {
+        $("#" + id).val("获取验证码");
+        $("#" + id).removeAttr("disabled");
+    }
+}
+//======================发送手机验证码================
+function getsmscode() {
+    var mobile = $("#mobile_phone").val();
+    /*电话验证*/
+    if (!ValidateMobile(mobile)) {
+        TipMsg.position("请输入正确的手机号码", $("#mobile_phone"), 2000, 0, 0); $("#mobile_phone").focus(); return;
+    }
+    $.ajax({
+        type: "GET",
+        url: "/tools/user_ajax.ashx",
+        data: { act: 'smsSend', mobile: mobile },
+        dataType: "text",
+        beforeSend: function () {
+            TipMsg.position("验证码发送中请稍等...", $("#mobile_phone"), 2000, 0, 0); return;
+        },
+        error: function (result) {
+            TipMsg.position("验证码发送出现错误", $("#mobile_phone"), 2000, 0, 0); return;
+        },
+        success: function (data) {
+            var obj = eval('(' + data + ')');
+            if (obj.status == "y") {
+                TipMsg.position(obj.info, $("#mobile_phone"), 2000, 0, 0); return;
+            }
+            else {
+                TipMsg.position(obj.info, $("#mobile_phone"), 2000, 0, 0); return;
+            }
+        }
+    });
+}
+//======================发送手机(提现密码)验证码================
+function getsmsck() {
+    $.ajax({
+        type: "GET",
+        url: "/tools/user_ajax.ashx",
+        data: { act: 'smsSendCK' },
+        dataType: "text",
+        beforeSend: function () {
+            layer.load(0, { shade: false, time: 2000 });
+        },
+        error: function (result) {
+            layer.alert("状态：" + textStatus + "；出错提示：" + errorThrown, 8);
+        },
+        success: function (data) {
+            var obj = eval('(' + data + ')');
+            if (obj.status == "y") {
+                refreshmsg("sures3", 60);
+                layer.alert(obj.info, 8);
+            }
+            else {
+                layer.alert(obj.info, 8);
+            }
+        }
+    });
+}
+//======================注册验证码================
+function reg_sms() {
+    var mobile = $("#mobile").val(), code2 = $("#code2").val();
+    /*电话验证*/
+    if (!ValidateMobile(mobile)) {
+        TipMsg.position("请输入正确的手机号码！", $("#mobile"), 2000, 0, 0);
+        $("#mobile").focus();
+        return;
+    }
+    $.get("/tools/user_ajax.ashx", { act: "smsSendReg", mobile: mobile, code2: code2 }, function (data) {
+        var obj = eval('(' + data + ')');
+        if (obj.status == "n") {
+            TipMsg.position(obj.info, $("#mobile"), 2000, 0, 0); return;
+        } else if (obj.status == "c") {
+            TipMsg.position(obj.info, $("#code2"), 2000, 0, 0); return;
+        } else {
+            refreshmsg("btnOnece", 60);
+            TipMsg.position(obj.info, $("#mobile"), 2000, 0, 0); return;
+        }
+    });
+}
+//======================找回密码验证码================
+function findpwd_sms() {
+    var mobile = $("#mobile").val(), code2 = $("#code2").val();
+    /*电话验证*/
+    if (!ValidateMobile(mobile)) {
+        TipMsg.position("请输入正确的手机号码！", $("#mobile"), 2000, 0, 0);
+        $("#mobile").focus();
+        return;
+    }
+    $.get("/tools/user_ajax.ashx", { act: "smsSendPwd", mobile: mobile, code2: code2 }, function (data) {
+        var obj = eval('(' + data + ')');
+        if (obj.status == "n") {
+            TipMsg.position(obj.info, $("#mobile"), 2000, 0, 0); return;
+        } else if (obj.status == "c") {
+            ToggleCode('#vCodeImg', '/tools/verify_code.ashx');
+            TipMsg.position(obj.info, $("#code2"), 2000, 0, 0); return;
+        } else {
+            refreshmsg("btnOnece", 60);
+            TipMsg.position(obj.info, $("#mobile"), 2000, 0, 0); return;
+        }
+    });
+}
+//======================发送手机验证码================
+function getsmscode_email() {
+    var email_old_mobile = $("#email_old_mobile").val();
+    $.ajax({
+        type: "GET",
+        url: "/tools/user_ajax.ashx",
+        data: { act: 'smsSend', mobile: email_old_mobile },
+        dataType: "text",
+        beforeSend: function () {
+            TipMsg.position("验证码发送中请稍等...", $("#email_mobile_code"), 2000, 0, 0); return;
+        },
+        error: function (result) {
+            TipMsg.position("验证码发送出现错误", $("#email_mobile_code"), 2000, 0, 0); return;
+        },
+        success: function (data) {
+            var obj = eval('(' + data + ')');
+            if (obj.status == "y") {
+                refreshmsg2("btn_email_mobile", 60);
+                TipMsg.position(obj.info, $("#email_mobile_code"), 2000, 0, 0); return;
+            }
+            else {
+                TipMsg.position(obj.info, $("#email_mobile_code"), 2000, 0, 0); return;
+            }
+        }
+    });
+}
+//======================发送邮箱验证码================
+function getemailcode() {
+    var email_new = $("#email_new").val();
+    /*邮箱验证*/
+    if (!ValidateEmail(email_new)) {
+        TipMsg.position("请输入正确的邮箱", $("#email_new"), 2000, 0, 0); $("#email_new").focus(); return;
+    }
+    $.ajax({
+        type: "GET",
+        url: "/tools/user_ajax.ashx",
+        data: { act: 'emailSend', email: email_new },
+        dataType: "text",
+        beforeSend: function () {
+            TipMsg.position("验证码发送中请稍等...", $("#code_email_new"), 2000, 0, 0); $("#code_email_new").focus(); return;
+        },
+        error: function (result) {
+            TipMsg.position("验证码发送出现错误", $("#code_email_new"), 2000, 0, 0); $("#code_email_new").focus(); return;
+        },
+        success: function (data) {
+            var obj = eval('(' + data + ')');
+            if (obj.status == "y") {
+                refreshmsg2("btn_email_new", 60);
+                TipMsg.position(obj.info, $("#code_email_new"), 2000, 0, 0); return;
+            }
+            else {
+                TipMsg.position(obj.info, $("#code_email_new"), 2000, 0, 0); return;
+            }
+        }
+    });
+}
+//======================发送邮箱验证码2================
+function getemailcode2() {
+    var email_old = $("#email_old").val();
+    $.ajax({
+        type: "GET",
+        url: "/tools/user_ajax.ashx",
+        data: { act: 'emailSend', email: email_old },
+        dataType: "text",
+        beforeSend: function () {
+            TipMsg.position("验证码发送中请稍等...", $("#email_old_code"), 2000, 0, 0); $("#email_old_code").focus(); return;
+        },
+        error: function (result) {
+            TipMsg.position("验证码发送出现错误", $("#email_old_code"), 2000, 0, 0); $("#email_old_code").focus(); return;
+        },
+        success: function (data) {
+            var obj = eval('(' + data + ')');
+            if (obj.status == "y") {
+                refreshmsg2("btn_email_old", 60);
+                TipMsg.position(obj.info, $("#email_old_code"), 2000, 0, 0); return;
+            }
+            else {
+                TipMsg.position(obj.info, $("#email_old_code"), 2000, 0, 0); return;
+            }
+        }
+    });
+}
+
+//=======================找回密码—验证码比较
+function pwd_code() {
+    var code = $.trim($("#code2").val());
+    /*电话验证*/
+    if (code.length != 4) {
+        TipMsg.position("请输入正确的验证码！", $("#code2"), 2000, 30, 0); $("#code2").focus(); return;
+    }
+    else {
+        $.ajax({
+            url: "/tools/user_ajax.ashx?act=pwd_code",
+            dataType: "text",
+            contentType: "application/x-www-form-urlencoded;charset=utf-8",
+            type: "post",
+            timeout: 6000,
+            data: $("#form1").serialize(),
+            success: function (data) {
+                var obj = eval('(' + data + ')');
+                if (obj.status == "y") {
+                    $(".box1").hide();
+                    $(".box2").show();
+                    return;
+                }
+                else {
+                    TipMsg.position(obj.info, $("#code2"), 2000, 30, 0);
+                    $("#code2").focus();
+                    return;
+                }
+            }
+        });
+    }
+}
+//=======================找回密码—重设密码
+function pwd_reset() {
+    var pwd1 = $.trim($("#pwd1").val()), pwd2 = $.trim($("#pwd2").val());
+    if (!ValidateChar(pwd1)) {
+        $("#pwd1").focus();
+        TipMsg.position("密码是数字+字母组成的8-24位字符！", $("#pwd1"), 2000, 0, 0);
+        return;
+    }
+    if (pwd1 != pwd2) {
+        $("#pwd2").focus();
+        TipMsg.position("两次密码不一致！！", $("#pwd2"), 2000, 30, 0);
+        return;
+    }
+    $.ajax({
+        url: "/tools/user_ajax.ashx?act=pwd_reset",
+        dataType: "text",
+        contentType: "application/x-www-form-urlencoded;charset=utf-8",
+        type: "post",
+        timeout: 6000,
+        data: $("#form1").serialize(),
+        success: function (data) {
+            var obj = eval('(' + data + ')');
+            if (obj.status == "y") {
+                alert(obj.info);
+                window.location.href = "/login.aspx";
+                return;
+            }
+            else {
+                TipMsg.position(obj.info, $("#btn_reset"), 2000, 30, 0); $("#btn_reset").focus();
+                return;
+            }
+        }
+    });
+}
+
+//=======================删除银行卡
+var delBank = function (bankid) {
+    //询问框
+    layer.confirm('您确定要删除该银行卡号吗？', {
+        btn: ['确定'] //按钮
+    }, function () {
+        $.ajax({
+            url: "/tools/user_opt_ajax.ashx?act=delbank&bankid=" + bankid,
+            dataType: "text",
+            contentType: "application/x-www-form-urlencoded;charset=utf-8",
+            type: "post",
+            timeout: 6000,
+            success: function (data) {
+                var obj = eval('(' + data + ')');
+                if (obj.status == "y") {
+                    alert(obj.info);
+                    location.reload();
+                }
+                else {
+                    TipMsg.position(obj.info, $("#btnbankid"), 2000, 30, 0);
+                    return;
+                }
+            }
+        });
+    });
+}
+//=======================添加银行卡
+var bindBank = function () {
+    if (!$("#bank_account_name").val()) {
+        TipMsg.position("请输入开户人姓名！", $("#bank_account_name"), 2000, 0, 0);
+        return false;
+    }
+    if (!$("#bank_branch").val()) {
+        TipMsg.position("开户支行不为空！", $("#bank_branch"), 2000, 0, 0);
+        return false;
+    }
+    if (!$("#bank_card").val()) {
+        TipMsg.position("请输入银行卡号！", $("#bank_card"), 2000, 0, 0);
+        return false;
+    }
+    if (!bankcardCheck($("#bank_card").val())) {
+        TipMsg.position("银行卡号不合法！", $("#bank_card"), 2000, 0, 0);
+        return false;
+    }
+    if ($("#bank_card2").val() != $("#bank_card").val()) {
+        TipMsg.position("银行卡号输入不一致！", $("#bank_card2"), 2000, 0, 0);
+        return false;
+    }
+    $.ajax({
+        type: "POST",
+        url: "/tools/user_opt_ajax.ashx?act=addbank",
+        dataType: "json",
+        data: $("#form1").serialize(),
+        timeout: 20000,
+        cache: false,
+        beforeSend: function (XMLHttpRequest) {
+            $("#btnSubmit").attr("disabled", true);
+        },
+        success: function (data, textStatus) {
+            if (data.status == "y") {
+                alert(data.info);
+                location.reload();
+            } else {
+                $("#btnSubmit").attr("disabled", false);
+                TipMsg.position(data.info, $("#btnSubmit"), 2000, 0, 0);
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("状态：" + textStatus + "；出错提示：" + errorThrown);
+            $("#btnSubmit").attr("disabled", false);
+        }
+    });
+}
+
+
+var editBank = function () {
+    if (!$("#bank_account_name").val()) {
+        TipMsg.position("请输入开户人姓名！", $("#bank_account_name"), 2000, 0, 0);
+        return false;
+    }
+    if (!$("#bank_branch").val()) {
+        TipMsg.position("开户支行不为空！", $("#bank_branch"), 2000, 0, 0);
+        return false;
+    }
+    if (!$("#bank_card").val()) {
+        TipMsg.position("请输入银行卡号！", $("#bank_card"), 2000, 0, 0);
+        return false;
+    }
+    if (!bankcardCheck($("#bank_card").val())) {
+        TipMsg.position("银行卡号不合法！", $("#bank_card"), 2000, 0, 0);
+        return false;
+    }
+    if ($("#bank_card2").val() != $("#bank_card").val()) {
+        TipMsg.position("银行卡号输入不一致！", $("#bank_card2"), 2000, 0, 0);
+        return false;
+    }
+    $.ajax({
+        type: "POST",
+        url: "/tools/user_opt_ajax.ashx?act=editbank",
+        dataType: "json",
+        data: $("#form1").serialize(),
+        timeout: 20000,
+        cache: false,
+        beforeSend: function (XMLHttpRequest) {
+            $("#btnSubmit").attr("disabled", true);
+        },
+        success: function (data, textStatus) {
+            if (data.status == "y") {
+                alert(data.info);
+                location.reload();
+            } else {
+                $("#btnSubmit").attr("disabled", false);
+                TipMsg.position(data.info, $("#btnSubmit"), 2000, 0, 0);
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("状态：" + textStatus + "；出错提示：" + errorThrown);
+            $("#btnSubmit").attr("disabled", false);
+        }
+    });
+}
+
+//=======================实名认证
+function opt_name_true() {
+    var user_name = $("#user_name").val(), id_card = $("#id_card").val();
+    if (user_name.length < 2) {
+        $("#user_name").focus();
+        layer.alert("请输入您的真实姓名！", 8);
+        return;
+    }
+    /*身份证验证*/
+    if (!ValidateIdCard(id_card)) {
+        $("#id_card").focus();
+        layer.alert("请输入正确的身份证号码！", 8);
+        return;
+    }
+    $.ajax({
+        type: "POST",
+        url: "/tools/user_opt_ajax.ashx?act=opt_name_true",
+        dataType: "json",
+        data: { "user_name": user_name, "id_card": id_card },
+        timeout: 20000,
+        cache: false,
+        beforeSend: function (XMLHttpRequest) {
+            layer.load(0, { shade: false, time: 2000 });
+        },
+        success: function (data, textStatus) {
+            if (data.status == "y") {
+                layer.confirm(data.info, {
+                    btn: ['确定'] //按钮
+                }, function () {
+                    location.reload();
+                });
+                return;
+            } else {
+                layer.alert(data.info, 8);
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.alert("状态：" + textStatus + "；出错提示：" + errorThrown, 8);
+        }
+    });
+}
+//=======================修改邮箱
+function opt_email() {
+    var email = $("#newEmail").val();
+    if (email.length < 2) {
+        $("#newEmail").focus();
+        layer.alert("请输入正确的邮箱！", 8);
+        return;
+    }
+    /*邮箱验证*/
+    if (!ValidateEmail(email)) {
+        $("#email").focus();
+        layer.alert("请输入正确的邮箱！", 8);
+        return;
+    }
+    $.ajax({
+        type: "POST",
+        url: "/tools/user_opt_ajax.ashx?act=opt_email",
+        dataType: "json",
+        data: { "email": email },
+        timeout: 20000,
+        cache: false,
+        beforeSend: function (XMLHttpRequest) {
+            layer.load(0, { shade: false, time: 2000 });
+        },
+        success: function (data, textStatus) {
+            if (data.status == "y") {
+                alert("保存成功");
+                window.location.reload();
+                return;
+            } else {
+                layer.alert(data.info, 8);
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.alert("状态：" + textStatus + "；出错提示：" + errorThrown, 8);
+        }
+    });
+}
+
+//=======================修改密码
+function changePwd() {
+
+    var _oldpwd = $.trim($("#oldPwd").val()), _newPwd1 = $.trim($("#newPwd1").val()), _newPwd2 = $.trim($("#newPwd2").val());
+    if (_oldpwd.length < 6) {
+        layer.alert("密码最少６位哦！", 8);
+        $("#oldPwd").focus();
+        return;
+    }
+    if (!ValidateChar(_newPwd1)) {
+        layer.alert("密码由6-24位的字母数字或下划线组成！", 8);
+        $("#newPwd1").focus();
+        return;
+    }
+    if (_newPwd1 != "" && _newPwd1 != _newPwd2) {
+        layer.alert("两次输入密码不一致！", 8);
+        return;
+    }
+    $.ajax({
+        url: "/tools/user_opt_ajax.ashx?act=pwd",
+        dataType: "json",
+        type: "post",
+        timeout: 20000,
+        cache: false,
+        data: { "oldPwd": _oldpwd, "newPwd1": _newPwd1 },
+        beforeSend: function (XMLHttpRequest) {
+            layer.load(0, { shade: false, time: 2000 });
+        },
+        success: function (data) {
+            if (data.status == "y") {
+                alert("保存成功");
+                window.location.reload();
+                return;
+            } else {
+                layer.alert(data.info, 8);
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.alert("状态：" + textStatus + "；出错提示：" + errorThrown, 8);
+        }
+    });
+}
+
+//=======================交易验证码检查
+function trans_sms_ck() {
+    var vcode = $.trim($("#vcode").val());
+    if (vcode.length != 6) {
+        layer.alert("验证码错误", 8);
+        $("#oldPwd").focus();
+        return;
+    }
+    $.ajax({
+        url: "/tools/user_opt_ajax.ashx?act=pwd_trans_sms_ck",
+        dataType: "json",
+        type: "post",
+        timeout: 20000,
+        cache: false,
+        data: { "vcode": vcode },
+        beforeSend: function (XMLHttpRequest) {
+            layer.load(0, { shade: false, time: 2000 });
+        },
+        success: function (data) {
+            if (data.status == "y") {
+                var strhtml = "<div class='db-con'>";
+                if (data.ck == 1) {
+                    //strhtml += "<div class='ui-sub-form' style='padding-top: 20px'><label class='ui-label'>旧密码</label><input class='ui-input' id='oldPwd' style='width: 240px;' type='password'></div>";
+                    strhtml += "<div class='ui-sub-form' style='padding-top: 20px'><label class='ui-label'>新密码</label><input class='ui-input' id='newPwd1'  style='width: 240px;' type='password' placeholder='6位数字组成'></div>";
+                    strhtml += "<div class='ui-sub-form' style='padding-top: 20px'><label class='ui-label'>确认新密码</label><input class='ui-input' id='newPwd2' style='width: 240px;' type='password'  placeholder='请再次输入密码'></div>";
+                    strhtml += "<div class='ui-sub-form' style='padding-bottom: 0;'><input type='button'  class='btn-a' value='提交' onclick='return optTransPwd();'></div>";
+                } else {
+                    strhtml += "<div class='ui-sub-form' style='padding-top: 20px'><label class='ui-label'>输入密码</label><input class='ui-input' id='newPwd1'  style='width: 240px;' type='password' placeholder='6位数字组成'></div>";
+                    strhtml += "<div class='ui-sub-form' style='padding-top: 20px'><label class='ui-label'>确认密码</label><input class='ui-input' id='newPwd2' style='width: 240px;' type='password'  placeholder='请再次输入密码'></div>";
+                    strhtml += "<div class='ui-sub-form' style='padding-bottom: 0;'><input type='button'  class='btn-a' value='提交' onclick='return addTransPwd();'></div>";
+                }
+                strhtml += "</div>";
+                //页面层
+                layer.open({
+                    type: 1,
+                    skin: 'layui-layer-rim', //加上边框
+                    area: ['460px', '400px'], //宽高
+                    content: strhtml
+                });
+            } else {
+                layer.alert(data.info, 8);
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.alert("状态：" + textStatus + "；出错提示：" + errorThrown, 8);
+        }
+    });
+}
+
+var tranPasswordChange = function()
+{
+    $.ajax({
+        url: "/tools/user_opt_ajax.ashx?act=tranPasswordChange",
+        dataType: "json",
+        type: "post",
+        timeout: 20000,
+        cache: false, 
+        beforeSend: function (XMLHttpRequest) {
+            layer.load(0, { shade: false, time: 2000 });
+        },
+        success: function (data) {
+            if (data.status == "y") {
+                var strhtml = "<div class='db-con'>";
+                if (data.ck == 1) {
+                    //strhtml += "<div class='ui-sub-form' style='padding-top: 20px'><label class='ui-label'>旧密码</label><input class='ui-input' id='oldPwd' style='width: 240px;' type='password'></div>";
+                    strhtml += "<div class='ui-sub-form' style='padding-top: 20px'><label class='ui-label'>新密码</label><input class='ui-input' id='newPwd1'  style='width: 240px;' type='password' placeholder='6位数字组成'></div>";
+                    strhtml += "<div class='ui-sub-form' style='padding-top: 20px'><label class='ui-label'>确认新密码</label><input class='ui-input' id='newPwd2' style='width: 240px;' type='password'  placeholder='请再次输入密码'></div>";
+                    strhtml += "<div class='ui-sub-form' style='padding-bottom: 0;'><input type='button'  class='btn-a' value='提交' onclick='return optTransPwd();'></div>";
+                } else {
+                    strhtml += "<div class='ui-sub-form' style='padding-top: 20px'><label class='ui-label'>输入密码</label><input class='ui-input' id='newPwd1'  style='width: 240px;' type='password' placeholder='6位数字组成'></div>";
+                    strhtml += "<div class='ui-sub-form' style='padding-top: 20px'><label class='ui-label'>确认密码</label><input class='ui-input' id='newPwd2' style='width: 240px;' type='password'  placeholder='请再次输入密码'></div>";
+                    strhtml += "<div class='ui-sub-form' style='padding-bottom: 0;'><input type='button'  class='btn-a' value='提交' onclick='return addTransPwd();'></div>";
+                }
+                strhtml += "</div>";
+                //页面层
+                layer.open({
+                    type: 1,
+                    skin: 'layui-layer-rim', //加上边框
+                    area: ['460px', '400px'], //宽高
+                    content: strhtml
+                });
+            } else {
+                layer.alert(data.info, 8);
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.alert("状态：" + textStatus + "；出错提示：" + errorThrown, 8);
+        }
+    });
+}
+
+//=======================修改提现密码
+function optTransPwd() {
+    var _oldpwd = $.trim($("#oldPwd").val()), _newPwd1 = $.trim($("#newPwd1").val()), _newPwd2 = $.trim($("#newPwd2").val());
+    //if (_oldpwd.length < 6) {
+    //    layer.alert("密码最少６位哦！", 8);
+    //    $("#oldPwd").focus();
+    //    return;
+    //}
+    if (!ValidateChar(_newPwd1)) {
+        layer.alert("密码由6-24位的字母数字或下划线组成！", 8);
+        $("#newPwd1").focus();
+        return;
+    }
+    if (_newPwd1 != "" && _newPwd1 != _newPwd2) {
+        layer.alert("两次输入密码不一致！", 8);
+        return;
+    }
+    $.ajax({
+        url: "/tools/user_opt_ajax.ashx?act=pwd_trans",
+        dataType: "json",
+        type: "post",
+        timeout: 20000,
+        cache: false,
+        data: { "oldPwd": _oldpwd, "newPwd1": _newPwd1 },
+        beforeSend: function (XMLHttpRequest) {
+            layer.load(0, { shade: false, time: 2000 });
+        },
+        success: function (data) {
+            if (data.status == "y") {
+                alert("保存成功");
+                window.location.reload();
+                return;
+            } else {
+                layer.alert(data.info, 8);
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.alert("状态：" + textStatus + "；出错提示：" + errorThrown, 8);
+        }
+    });
+}
+
+//=======================设置提现密码
+function addTransPwd() {
+    var _newPwd1 = $.trim($("#newPwd1").val()), _newPwd2 = $.trim($("#newPwd2").val());
+
+    if (_newPwd1 != "" && _newPwd1 != _newPwd2) {
+        layer.alert("两次输入密码不一致！", 8);
+        return;
+    }
+    $.ajax({
+        url: "/tools/user_opt_ajax.ashx?act=pwd_trans_add",
+        dataType: "json",
+        type: "post",
+        timeout: 20000,
+        cache: false,
+        data: { "newPwd2": _newPwd2, "newPwd1": _newPwd1 },
+        beforeSend: function (XMLHttpRequest) {
+            layer.load(0, { shade: false, time: 2000 });
+        },
+        success: function (data) {
+            if (data.status == "y") {
+                alert("保存成功");
+                window.location.reload();
+                return;
+            } else {
+                layer.alert(data.info, 8);
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.alert("状态：" + textStatus + "；出错提示：" + errorThrown, 8);
+        }
+    });
+}
+
+//=======================修改资料
+function opt_account() {
+    var qq = $("#qq").val(), wechat = $("#wechat").val(), address = $("#address").val(), nick_name = $("#nick_name").val();
+    $.ajax({
+        type: "POST",
+        url: "/tools/user_opt_ajax.ashx?act=opt",
+        dataType: "json",
+        data: { "qq": qq, "wechat": wechat, "address": address, "nick_name": nick_name },
+        timeout: 20000,
+        cache: false,
+        beforeSend: function (XMLHttpRequest) {
+            layer.load("正在保存修改，请稍候...", 2);
+        },
+        success: function (data, textStatus) {
+            if (data.status == "y") {
+                alert("保存成功");
+                window.location.reload();
+                return;
+            } else {
+                layer.alert(data.info, 8);
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.alert("状态：" + textStatus + "；出错提示：" + errorThrown, 8);
+        }
+    });
+}
+//=======================我要提款
+var withdrawal = function () {
+    var tkyhk = $("#tkyhk").val(), cash_money = $("#cash_money").val(), trade_pass = $("#trade_pass").val();
+    if (isNaN(cash_money)) {
+        $("#cash_money").focus();
+        TipMsg.position("提款金额必须是数字！", $("#cash_money"), 2000, 0, 0);
+        return;
+    }
+    if (cash_money < 2) {
+        $("#cash_money").focus();
+        TipMsg.position("提款金额必须大于2元！", $("#cash_money"), 2000, 0, 0);
+        return;
+    }
+    if (tkyhk == "") {
+        $("#tkyhk").focus();
+        TipMsg.position("请选择提款银行卡！", $("#tkyhk"), 2000, 0, 0);
+        return;
+    }
+    if (trade_pass == "") {
+        $("#trade_pass").focus();
+        TipMsg.position("请输入提现密码！", $("#trade_pass"), 2000, 0, 0);
+        return;
+    }
+    $.ajax({
+        url: "/tools/user_opt_ajax.ashx?act=withdrawal",
+        dataType: "text",
+        contentType: "application/x-www-form-urlencoded;charset=utf-8",
+        type: "post",
+        dataType: "json",
+        timeout: 6000,
+        data: $("#form2").serialize(),
+        success: function (data) {
+            if (data.status == "y") {
+                alert(data.info);
+                window.location.href = "/user/cash.aspx";
+            }
+            else {
+                TipMsg.position(data.info, $("#btnwithdrawal"), 2000, 30, 0);
+                return;
+            }
+        }
+    });
+}
+//=======================微信充值
+function pay_by_wechat() {
+    var total = $("#wechat_total").val();
+    if (total.length < 1) {
+        $("#wechat_total").focus();
+        layer.alert("请填写转账金额！", 8);
+        return;
+    }
+    if (isNaN(total)) {
+        $("#wechat_total").focus();
+        layer.alert("转账金额必须是数字！", 8);
+        return false;
+    }
+    $.ajax({
+        type: "POST",
+        url: "/tools/user_opt_ajax.ashx?act=pay_by_wechat",
+        dataType: "json",
+        data: $("#form2").serialize(),
+        timeout: 20000,
+        cache: false,
+        beforeSend: function (XMLHttpRequest) {
+            layer.load(0, { shade: false, time: 2000 });
+        },
+        success: function (data, textStatus) {
+            if (data.status == "y") {
+                $("#wechat_total").val("");
+                $("#wxremark").val("");
+                layer.alert("提交成功，我们会第一时间进行处理", 1);
+                return;
+            } else {
+                layer.alert(data.info, 8);
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.alert("状态：" + textStatus + "；出错提示：" + errorThrown, 8);
+        }
+    });
+}
+//=======================支付宝充值
+function pay_by_alipay() {
+    var total = $("#alipay_total").val();
+    if (total.length < 1) {
+        $("#alipay_total").focus();
+        layer.alert("请填写转账金额！", 8);
+        return;
+    }
+    if (isNaN(total)) {
+        $("#alipay_total").focus();
+        layer.alert("转账金额必须是数字！", 8);
+        return false;
+    }
+    $.ajax({
+        type: "POST",
+        url: "/tools/user_opt_ajax.ashx?act=pay_by_alipay",
+        dataType: "json",
+        data: $("#form3").serialize(),
+        timeout: 20000,
+        cache: false,
+        beforeSend: function (XMLHttpRequest) {
+            layer.load(0, { shade: false, time: 2000 });
+        },
+        success: function (data, textStatus) {
+            if (data.status == "y") {
+                $("#alipay_total").val("");
+                $("#alipay_account").val("");
+                $(".alipay_step_1").addClass("hide");
+                $(".alipay_step_2").removeClass("hide").addClass("block");
+                //layer.alert("提交成功，我们会第一时间进行处理", 1);
+                return;
+            } else {
+                layer.alert(data.info, 8);
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.alert("状态：" + textStatus + "；出错提示：" + errorThrown, 8);
+        }
+    });
+}
+//=======================银行充值
+function pay_by_bank() {
+    var total = $("#bank_total").val();
+    var bankUName = $("#bankUName").val();
+    if (total.length < 1) {
+        $("#bank_total").focus();
+        layer.alert("请填写转账金额！", 8);
+        return;
+    }
+    if (bankUName.length < 1) {
+        $("#bankUName").focus();
+        layer.alert("请填写账户名称！", 8);
+        return;
+    }
+    if (isNaN(total)) {
+        $("#bank_total").focus();
+        layer.alert("转账金额必须是数字！", 8);
+        return false;
+    }
+    if (total < 100) {
+        $("#bank_total").focus();
+        layer.alert("转账金额必须大于100元！", 8);
+        return false;
+    }
+    $.ajax({
+        type: "POST",
+        url: "/tools/user_opt_ajax.ashx?act=pay_by_bank",
+        dataType: "json",
+        data: $("#form4").serialize(),
+        timeout: 20000,
+        cache: false,
+        beforeSend: function (XMLHttpRequest) {
+            layer.load(0, { shade: false, time: 2000 });
+        },
+        success: function (data, textStatus) {
+            if (data.status == "y") {
+                $("#bank_total").val("");
+                $("#bankremark").val("");
+                layer.alert("提交成功，我们会第一时间进行处理", 1);
+                return;
+            } else {
+                layer.alert(data.info, 8);
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.alert("状态：" + textStatus + "；出错提示：" + errorThrown, 8);
+        }
+    });
+}

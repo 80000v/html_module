@@ -1,0 +1,1804 @@
+﻿var api_domain_url = "/", mobile = localStorage.mobile, pwd = localStorage.pwd;
+var api_domain_web_url = "http://www.58celve.com/";
+$(function () {
+    footer_one();
+});
+//======================导航信息================
+var footer_one = function () {
+    var is_login = login_status_ck();
+    var strHtml = "<li><a href='../home/index.html' class='nav-home'><span></span>首页</a></li>";
+    strHtml += "<li><a href='../trans/buy.html' class='nav-trade'><span></span>交易</a></li>";
+    strHtml += "<li><a href='../trans/mine.html' class='nav-mine'><span></span>自选</a></li>";
+    if (is_login == 1) {
+        strHtml += "<li><a href='../user/index.html' class='nav-user'><span></span>我的</a></li>";
+    } else {
+        strHtml += "<li><a href='../user/login.html' class='nav-user'><span></span>我的</a></li>";
+    }
+    $("#footer").html(strHtml);
+}
+//======================登录状态================
+var login_status_ck = function () {
+    var is_login = 1;
+    if (!ValidateMobile(mobile)) {
+        is_login = 0;
+    }
+    if (!ValidateCharBig(pwd)) {
+        is_login = 0;
+    }
+    if (pwd == "undefined") {
+        is_login = 0;
+    }
+    return is_login;
+}
+//======================登录状态(获取用户信息)================
+var login_status = function () {
+    var is_login = login_status_ck();
+    if (is_login == 1) {
+        $.getJSON(api_domain_url + "tools/user_ajax.ashx", { act: "loginstatus", mobile: mobile, pwd: pwd, t: new Date() }, function (data) {
+            if (data.user_id == 0) {
+                login_out();
+            } else {
+                $("#user_id").val(data.items.id);
+                $(".nick_name").html(data.items.nick_name.length > 0 ? data.items.nick_name : data.phone_mobile);
+                $(".phone_mobile").html(data.phone_mobile);
+                $("#mobile").val(data.items.phone_mobile);
+                $(".user_name").html(data.items.user_name);
+                $("#bank_account_name").val(data.items.user_name);
+                var pay_ck = $("#pay_ck").val();
+                if (data.items.name_true == 2) {
+                    $(".name_true").html("<span class='fr mr30 txt-grey ng-binding'>" + data.items.user_name + "（" + data.id_no + "）</span> 实名认证");
+                } else {
+                    $(".name_true").html("<span class='fr mr30 txt-grey ng-binding'>立即认证</span> 实名认证<i class='mod-arrow-r'></i>");
+                    $(".name_true").attr("href", "../user/account/name_true.html");
+                    $(".banktips").html("添加银行卡前，请先进行实名认证<a href='name_true.html'>立即前往认证？</a>");
+                    if (pay_ck == 1) {
+                        location.href = "/user/account/name_true.html?pay_ck=1";
+                    } else if (pay_ck == 2) {
+                        location.href = "/user/account/name_true.html?pay_ck=2";
+                    }
+                }
+                if (data.items.trade_pass.length > 5) {
+                    $(".trade_pass").find("span").html("修改");
+                    $(".trade_pass").attr("href", "../user/account/trade_pass_reset.html");
+                } else {
+                    $(".trade_pass").find("span").html("设置");
+                    $(".trade_pass").attr("href", "../user/account/trade_pass_set.html");
+                }
+            }
+        });
+    } else {
+        login_out();
+    }
+}
+//======================登录状态(交易界面)================
+var login_status_trans = function () {
+    var is_login = login_status_ck(), strHtml = "";
+    if (is_login == 1) {
+        $.getJSON(api_domain_url + "tools/user_ajax.ashx", { act: "loginstatus", mobile: mobile, pwd: pwd, t: new Date() }, function (data) {
+            if (data.user_id == 0) {
+                strHtml += "<li class='m-buy'><a href='../user/login.html?url=../trans/buy.html'>创建策略</a></li>";
+                strHtml += "<li class='m-sell'><a href='../user/login.html?url=../trans/sale.html'>我的策略</a></li>";
+                strHtml += "<li class='m-result'><a href='../user/login.html?url=../trans/money.html'>结算策略</a></li>";
+                $("#trans_nav").html(strHtml);
+            }
+        });
+    } else {
+        strHtml += "<li class='m-buy'><a href='../user/login.html?url=../trans/buy.html'>创建策略</a></li>";
+        strHtml += "<li class='m-sell'><a href='../user/login.html?url=../trans/sale.html'>我的策略</a></li>";
+        strHtml += "<li class='m-result'><a href='../user/login.html?url=../trans/money.html'>结算策略</a></li>";
+        $("#trans_nav").html(strHtml);
+    }
+}
+//======================登录状态(免费体验界面)================
+var login_status_trans_free = function () {
+    var is_login = login_status_ck(), strHtml = "";
+    if (is_login == 1) {
+        $.getJSON(api_domain_url + "tools/user_ajax.ashx", { act: "loginstatus", mobile: mobile, pwd: pwd, t: new Date() }, function (data) {
+            if (data.user_id == 0) {
+                strHtml += "<li class='m-buy'><a href='../user/login.html?url=../transfree/buy.html'>免费体验</a></li>";
+                strHtml += "<li class='m-sell'><a href='../user/login.html?url=../transfree/sale.html'>我的策略</a></li>";
+                strHtml += "<li class='m-result'><a href='../user/login.html?url=../transfree/money.html'>结算策略</a></li>";
+                $("#trans_nav").html(strHtml);
+            }
+        });
+    } else {
+        strHtml += "<li class='m-buy'><a href='../user/login.html?url=../trans/transfree.html'>免费体验</a></li>";
+        strHtml += "<li class='m-sell'><a href='../user/login.html?url=../trans/transfree.html'>我的策略</a></li>";
+        strHtml += "<li class='m-result'><a href='../user/login.html?url=../trans/transfree.html'>结算策略</a></li>";
+        $("#trans_nav").html(strHtml);
+    }
+}
+//=======================退出登录
+function login_out() {
+    $.ajax({
+        url: api_domain_url + "tools/user_ajax.ashx?act=loginout",
+        dataType: "text",
+        type: "GET",
+        timeout: 6000,
+        cache: false,
+        success: function (data) {
+            localStorage.mobile = "";
+            localStorage.pwd = "";
+            window.location = "../../user/login.html?url=" + location.href;
+        }
+    });
+}
+//=======================系统配置
+var sys_config = function () {
+    $.getJSON(api_domain_url + "tools/list_ajax.ashx", { act: "sys_config", t: new Date() }, function (data) {
+        $(".weburl").html(data.items.weburl);
+        $(".service_tel").find("a").attr("href", "tel:" + data.items.webtel);
+        $(".service_tel").find(".ng-binding").html(data.items.webtel);
+        $(".service_tel").find(".txt-s16 .desc").html(data.items.worktime);
+        $(".service_tel").html(data.items.webtel);
+        $(".webcopyright").html(data.items.webcopyright);
+        var qqlist = data.items.qq.split("#");
+        if (qqlist.length > 0) {
+            for (var i = 0; i < qqlist.length; i++) {
+                var qq_no = qqlist[i].split(":");
+                if (qq_no.length == 2) {
+                    if (i == 0) {
+                        $(".qq_chat").find("a").attr("href", "mqqwpa://im/chat?chat_type=wpa&uin=" + qq_no[1] + "&version=1&src_type=web&web_src=oicqzone.com");
+                        $(".qq_chat").find(".ng-binding").html(qq_no[1]);
+                        $(".qq_chat").find(".txt-s16 .desc").html(qq_no[0]);
+                    }
+                }
+            }
+        }
+    });
+}
+//=======================获取分类内容
+var category_detail = function () {
+    var call_index = getUrlParam("call_index");
+    $.getJSON(api_domain_url + "tools/list_ajax.ashx", { act: "category_detail", call_index: call_index, t: new Date() }, function (data) {
+        $(".info_title").html(data.items.title);
+        $(".info_cmt").html(data.items.content);
+    });
+}
+//=======================获取分类内容
+var category_list = function () {
+    var call_index = getUrlParam("call_index");
+    $.getJSON(api_domain_url + "tools/list_ajax.ashx", { act: "category_list", call_index: call_index, t: new Date() }, function (data) {
+        $(".info_title").html(data.items.title);
+        $(".info_cmt").html(data.items.content);
+    });
+}
+//=======================获取新闻内容
+var news_detail = function () {
+    var id = getUrlParam("id");
+    $.getJSON(api_domain_url + "tools/list_ajax.ashx", { act: "news_detail", id: id, t: new Date() }, function (data) {
+        $(".info_head").html(data.items.title);
+        $(".info_title").html(data.items.title);
+        $(".info_cmt").html(data.items.content);
+        $(".info_time").html(data.items.zhaiyao);
+    });
+}
+//=======================轮播图
+var banner_list = function () {
+    $.get(api_domain_url + "tools/list_ajax.ashx", { act: "banner_list", t: new Date() }, function (data) {
+        $("#slider").html(data);
+        TouchSlide({ slideCell: "#slider", mainCell: ".bd ul", titCell: ".hd li", effect: "leftLoop", autoPlay: true, interTime: "5000" })
+    });
+}
+//=======================点买列表
+var hot_buy = function () {
+    $.getJSON(api_domain_url + "tools/list_ajax.ashx", { act: "hot_buy", t: new Date() }, function (data) {
+        $(".infoList").html(data.msg);
+        jQuery(".txtScroll-top").slide({ mainCell: ".bd ul", autoPage: true, effect: "top", autoPlay: true, vis: 1 });
+    });
+}
+//=======================知识
+var news_list_index = function () {
+    $.get(api_domain_url + "tools/list_ajax.ashx", { act: "news_list_index", call_index: "knowledge", t: new Date() }, function (data) {
+        $(".picScrollList").html(data);
+        TouchSlide({ slideCell: "#picScroll", titCell: ".hd ul", autoPage: true, pnLoop: "false", switchLoad: "_src" });
+    });
+}
+//=======================头条
+var news_list_index_toutiao = function () {
+    $.getJSON(api_domain_url + "tools/list_ajax.ashx", { act: "news_list_index_toutiao", call_index: "notice", pagesize: 1, t: new Date() }, function (data) {
+        $(".toutiao").html(data.msg);
+    });
+}
+//=======================策略龙虎榜
+var list_profit = function () {
+    $.get(api_domain_url + "tools/list_ajax.ashx", { act: "list_profit", t: new Date() }, function (data) {
+        $("#list_profit").html(data);
+    });
+}
+//=======================最新买入
+var list_lasted = function () {
+    $.get(api_domain_url + "tools/list_ajax.ashx", { act: "list_lasted", type_id: 0, t: new Date() }, function (data) {
+        $("#list_lasted").html(data);
+    });
+}
+//=======================行情指数
+var stock_grail_list = function () {
+    $.get(api_domain_url + "tools/api_ajax.ashx", { act: "stock_grail", t: new Date() }, function (data) {
+        var hq_list = data.split("#");
+        if (hq_list.length > 0) {
+            for (var i = 0; i < hq_list.length; i++) {
+                var hq_info = hq_list[i].split(",");
+                var point = parseFloat(hq_info[1]).toFixed(2);//当前点数
+                var price = parseFloat(hq_info[2]).toFixed(2);//当前价格
+                var zd = parseFloat(hq_info[3]).toFixed(2);//涨跌率
+                if (i == 0) {
+                    $(".sh_list").removeClass("txt-green");
+                    $(".sh_list").removeClass("txt-red");
+                    $(".sh_list").html(point + "<br/>" + (zd > 0 ? "+" + zd : zd) + "%");
+                    if (zd > 0) {
+                        $(".sh_list").addClass("txt-red");
+                    } else {
+                        $(".sh_list").addClass("txt-green");
+                    }
+                }
+
+                if (i == 1) {
+                    $(".sz_list").removeClass("txt-green");
+                    $(".sz_list").removeClass("txt-red");
+                    $(".sz_list").html(point + "<br/>" + (zd > 0 ? "+" + zd : zd) + "%");
+                    if (zd > 0) {
+                        $(".sz_list").addClass("txt-red");
+                    } else {
+                        $(".sz_list").addClass("txt-green");
+                    }
+                }
+
+                if (i == 2) {
+                    $(".sc_list").removeClass("txt-green");
+                    $(".sc_list").removeClass("txt-red");
+                    $(".sc_list").html(point + "<br/>" + (zd > 0 ? "+" + zd : zd) + "%");
+                    if (zd > 0) {
+                        $(".sc_list").addClass("txt-red");
+                    } else {
+                        $(".sc_list").addClass("txt-green");
+                    }
+                }
+            }
+        }
+    });
+}
+var stock_grail_list_2 = function () {
+    $.get(api_domain_url + "tools/api_ajax.ashx", { act: "stock_grail", t: new Date() }, function (data) {
+        var hq_list = data.split("#");
+        if (hq_list.length > 0) {
+            for (var i = 0; i < hq_list.length; i++) {
+                var hq_info = hq_list[i].split(",");
+                var point = parseFloat(hq_info[1]).toFixed(2);//当前点数
+                var price = parseFloat(hq_info[2]).toFixed(2);//当前价格
+                var zd = parseFloat(hq_info[3]).toFixed(2);//涨跌率
+                if (i == 0) {
+                    $(".sh_list").removeClass("high").removeClass("low");
+                    $(".sh_list").find(".txt-gray").html(price + "&nbsp;&nbsp;" + (zd > 0 ? "+" + zd : zd) + "%");
+                    $(".sh_list").find(".info").html("<i class='iconfont txt-s10'>" + (zd > 0 ? "↑" : "↓") + "</i>" + point);
+                    if (zd > 0) {
+                        $(".sh_list").addClass("high");
+                    } else {
+                        $(".sh_list").addClass("low");
+                    }
+                }
+
+                if (i == 1) {
+                    $(".sz_list").removeClass("high").removeClass("low");
+                    $(".sz_list").find(".txt-gray").html(price + "&nbsp;&nbsp;" + (zd > 0 ? "+" + zd : zd) + "%");
+                    $(".sz_list").find(".info").html("<i class='iconfont txt-s10'>" + (zd > 0 ? "↑" : "↓") + "</i>" + point);
+                    if (zd > 0) {
+                        $(".sz_list").addClass("high");
+                    } else {
+                        $(".sz_list").addClass("low");
+                    }
+                }
+
+                if (i == 2) {
+                    $(".sc_list").removeClass("high").removeClass("low");
+                    $(".sc_list").find(".txt-gray").html(price + "&nbsp;&nbsp;" + (zd > 0 ? "+" + zd : zd) + "%");
+                    $(".sc_list").find(".info").html("<i class='iconfont txt-s10'>" + (zd > 0 ? "↑" : "↓") + "</i>" + point);
+                    if (zd > 0) {
+                        $(".sc_list").addClass("high");
+                    } else {
+                        $(".sc_list").addClass("low");
+                    }
+                }
+            }
+        }
+    });
+}
+//=======================获取是否是交易时间
+var stock_grail_refresh = function () {
+    $.getJSON(api_domain_url + "tools/api_ajax.ashx", { act: "is_trade_time", t: new Date() }, function (data) {
+        //交易时间内定时刷新
+        if (data.is_trade_time == 0) {
+            setInterval("stock_grail_list()", 5000);
+        }
+    });
+}
+var stock_grail_refresh_2 = function () {
+    $.getJSON(api_domain_url + "tools/api_ajax.ashx", { act: "is_trade_time", t: new Date() }, function (data) {
+        //交易时间内定时刷新
+        if (data.is_trade_time == 0) {
+            setInterval("stock_grail_list_2()", 5000);
+            setInterval("list_mine_stock()", 5000);
+        }
+    });
+}
+//======================账户余额================
+var money_balanceaAndVoucher = function () {
+    $.getJSON(api_domain_url + "tools/user_opt_ajax.ashx", { act: "moneyBalanceaAndVoucher", mobile: mobile, pwd: pwd, t: new Date() }, function (data) {
+        var balance = data.balance !== -1 ? data.balance : 0;
+        $(".currbalance").html(balance);
+        $("#money_balance").val(balance);
+        if (data.voucher !== -1) {
+            $('#voucherFlag').show();
+            $('#userVoucher').show();
+            $('#voucherVal').html(data.voucher);
+        } else {
+            $('#voucherFlag').hide();
+            $('#userVoucher').hide();
+            $('#voucherVal').html(0);
+        }
+    });
+}
+//======================账户余额================
+var money_balanceaAndVoucher2 = function () {
+    $.getJSON(api_domain_url + "tools/user_opt_ajax.ashx", { act: "moneyBalanceaAndVoucher2", mobile: mobile, pwd: pwd, t: new Date() }, function (data) {
+        var balance = data.balance !== -1 ? data.balance : 0;
+        $(".currbalance").html(balance);
+        $("#money_balance").val(balance);
+        if (data.voucher !== 0) {
+            $('#voucherFlag').show();
+            $('#userVoucher').show();
+            $('#voucherVal').html(data.voucher);
+        } else {
+            $('#voucherFlag').hide();
+            $('#userVoucher').hide();
+            $('#voucherVal').html(0);
+        }
+    });
+}
+
+var money_balance = function () {
+    $.getJSON(api_domain_url + "tools/user_opt_ajax.ashx", { act: "money_balance", mobile: mobile, pwd: pwd, t: new Date() }, function (data) {
+        $(".currbalance").html(data);
+        $("#money_balance").val(data);
+    });
+}
+//======================今日最大可买次数================
+var max_buy_today = function () {
+    $.get(api_domain_url + "tools/user_opt_ajax.ashx", { act: "max_buy_today", mobile: mobile, pwd: pwd, t: new Date() }, function (data) {
+        $(".max_buy_today").html(data);
+    });
+}
+function gourl(url) {
+    location.href = url;
+}
+//=======================延时加载
+var delay = (function () {
+    var timer = 0;
+    return function (callback, time) {
+        clearTimeout(timer);
+        timer = setTimeout(callback, time);
+    };
+})();
+//======================返回上一页
+var url_back = function () {
+    if ((navigator.userAgent.indexOf('MSIE') >= 0) && (navigator.userAgent.indexOf('Opera') < 0)) { // IE  
+        if (history.length > 1) {
+            window.history.go(-1);
+        } else {
+            window.location.href = '../home/index.html';
+        }
+    } else { //非IE浏览器  
+        if (navigator.userAgent.indexOf('Firefox') >= 0 ||
+            navigator.userAgent.indexOf('Opera') >= 0 ||
+            navigator.userAgent.indexOf('Safari') >= 0 ||
+            navigator.userAgent.indexOf('Chrome') >= 0 ||
+            navigator.userAgent.indexOf('WebKit') >= 0) {
+            if (window.history.length > 2) {
+                window.history.go(-1);
+            } else {
+                window.location.href = '../home/index.html';
+            }
+        } else {//未知的浏览器  
+            if (history.length > 1) {
+                window.history.go(-1);
+            } else {
+                window.location.href = '../home/index.html';
+            }
+        }
+    }
+}
+//不四舍五入保留2位小数
+function toFixed2(num) {
+    return parseFloat(num.toString().replace(/(\.\d{2})\d+$/, "$1"));
+}
+/**
+ * 将数值格式化成类金额形式,逗号隔开及小数位
+ * @param num 要转换的数值
+ * @param n 要保留的小数位数
+ * @author byboating
+ */
+function fMoney(num, n) {
+    if (n != 0) {
+        n = n > 0 && n <= 20 ? n : 2;
+    }
+    num = parseFloat((num + "").replace(/[^\d\.-]/g, "")).toFixed(n) + "";
+    var l = num.split(".")[0].split("").reverse(), r = num.split(".")[1];
+    var t = "";
+    for (var i = 0; i < l.length; i++) {
+        t += l[i] + ((i + 1) % 3 == 0 && (i + 1) != l.length ? "," : "");
+    }
+    if (n == 0) return t.split("").reverse().join("");
+    return t.split("").reverse().join("") + "." + r;
+}
+/**
+ * 格式化金额 大于1万的以 万为单位，大于1千小于1万的用千表示
+ * @param number
+ */
+function fomatNumber(number) {
+    var result;
+    if (1000 <= parseInt(number) && parseInt(number) < 10000) {
+        result = parseInt(number) / 1000 + "千";
+    } else if (100 <= parseInt(number) && parseInt(number) < 1000) {
+        result = parseInt(number) / 100 + "百";
+    }
+    else if (10000 <= parseInt(number)) {
+        result = parseInt(number) / 10000 + "万";
+    }
+    else if (100000000 <= parseInt(number)) {
+        result = parseInt(number) / 100000000 + "亿";
+    }
+    else {
+        result = number + "元";
+    }
+    return result;
+}
+/* 判断金额框是否输入的是合法的数字*/
+function validateMoney(a) {
+    var reNum = /^(([1-9]\d*)|0)(\.(\d){1,2})?$/;
+    if (!reNum.test($(a).val())) {
+        $(a).val("");
+    } else {
+        if (parseFloat($(a).val()) > parseFloat($(a).attr("maxValue"))) {
+            $(a).val($(a).attr("maxValue"));
+        }
+    }
+}
+//======================来源网址
+function getUrlParam(name) { var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); var r = window.location.search.substr(1).match(reg); if (r != null) return unescape(r[2]); return '/'; }
+//======================切换验证码
+function ToggleCode(obj, codeurl) { $(obj).attr("src", codeurl + "?time=" + Math.random()); }
+/*验证银行卡号*/
+//银行卡号校验
+//Description:  银行卡号Luhm校验
+//Luhm校验规则：16位银行卡号（19位通用）:
+// 1.将未带校验位的 15（或18）位卡号从右依次编号 1 到 15（18），位于奇数位号上的数字乘以 2。
+// 2.将奇位乘积的个十位全部相加，再加上所有偶数位上的数字。
+// 3.将加法和加上校验位能被 10 整除。
+function bankcardCheck(bankno) {
+    if (bankno.length < 16 || bankno.length > 19) {
+        //$("#banknoInfo").html("银行卡号长度必须在16到19之间");
+        return false;
+    }
+    var num = /^\d*$/;  //全数字
+    if (!num.exec(bankno)) {
+        //$("#banknoInfo").html("银行卡号必须全为数字");
+        return false;
+    }
+    //开头6位
+    var strBin = "10,18,30,35,37,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,58,60,62,65,68,69,84,87,88,94,95,98,99";
+    if (strBin.indexOf(bankno.substring(0, 2)) == -1) {
+        //$("#banknoInfo").html("银行卡号开头6位不符合规范");
+        return false;
+    }
+
+    var lastNum = bankno.substr(bankno.length - 1, 1);//取出最后一位（与luhm进行比较）
+    var first15Num = bankno.substr(0, bankno.length - 1);//前15或18位
+    var newArr = new Array();
+    for (var i = first15Num.length - 1; i > -1; i--) {    //前15或18位倒序存进数组
+        newArr.push(first15Num.substr(i, 1));
+    }
+    var arrJiShu = new Array();  //奇数位*2的积 <9
+    var arrJiShu2 = new Array(); //奇数位*2的积 >9
+    var arrOuShu = new Array();  //偶数位数组
+    for (var j = 0; j < newArr.length; j++) {
+        if ((j + 1) % 2 == 1) {//奇数位
+            if (parseInt(newArr[j]) * 2 < 9)
+                arrJiShu.push(parseInt(newArr[j]) * 2);
+            else
+                arrJiShu2.push(parseInt(newArr[j]) * 2);
+        }
+        else //偶数位
+            arrOuShu.push(newArr[j]);
+    }
+    var jishu_child1 = new Array();//奇数位*2 >9 的分割之后的数组个位数
+    var jishu_child2 = new Array();//奇数位*2 >9 的分割之后的数组十位数
+    for (var h = 0; h < arrJiShu2.length; h++) {
+        jishu_child1.push(parseInt(arrJiShu2[h]) % 10);
+        jishu_child2.push(parseInt(arrJiShu2[h]) / 10);
+    }
+    var sumJiShu = 0; //奇数位*2 < 9 的数组之和
+    var sumOuShu = 0; //偶数位数组之和
+    var sumJiShuChild1 = 0; //奇数位*2 >9 的分割之后的数组个位数之和
+    var sumJiShuChild2 = 0; //奇数位*2 >9 的分割之后的数组十位数之和
+    var sumTotal = 0;
+    for (var m = 0; m < arrJiShu.length; m++) {
+        sumJiShu = sumJiShu + parseInt(arrJiShu[m]);
+    }
+    for (var n = 0; n < arrOuShu.length; n++) {
+        sumOuShu = sumOuShu + parseInt(arrOuShu[n]);
+    }
+    for (var p = 0; p < jishu_child1.length; p++) {
+        sumJiShuChild1 = sumJiShuChild1 + parseInt(jishu_child1[p]);
+        sumJiShuChild2 = sumJiShuChild2 + parseInt(jishu_child2[p]);
+    }
+    //计算总和
+    sumTotal = parseInt(sumJiShu) + parseInt(sumOuShu) + parseInt(sumJiShuChild1) + parseInt(sumJiShuChild2);
+    //计算Luhm值
+    var k = parseInt(sumTotal) % 10 == 0 ? 10 : parseInt(sumTotal) % 10;
+    var luhm = 10 - k;
+    if (lastNum == luhm) {
+        //$("#banknoInfo").html("Luhm验证通过");
+        return true;
+    }
+    else {
+        //$("#banknoInfo").html("银行卡号必须符合Luhm校验");
+        return false;
+    }
+}
+//==========================验证身份证
+function ValidateIdCard(sId) {
+    var aCity = { 11: "北京", 12: "天津", 13: "河北", 14: "山西", 15: "内蒙古", 21: "辽宁", 22: "吉林", 23: "黑龙江 ", 31: "上海", 32: "江苏", 33: "浙江", 34: "安徽", 35: "福建", 36: "江西", 37: "山东", 41: "河南", 42: "湖北 ", 43: "湖南", 44: "广东", 45: "广西", 46: "海南", 50: "重庆", 51: "四川", 52: "贵州", 53: "云南", 54: "西藏 ", 61: "陕西", 62: "甘肃", 63: "青海", 64: "宁夏", 65: "新疆", 71: "台湾", 81: "香港", 82: "澳门", 91: "国外 " }
+    var iSum = 0;
+    var info = "";
+    sId = sId.replace(/x$/i, "a");
+    if (aCity[parseInt(sId.substr(0, 2))] == null) { return false };
+    sBirthday = sId.substr(6, 4) + "-" + Number(sId.substr(10, 2)) + "-" + Number(sId.substr(12, 2));
+    var d = new Date(sBirthday.replace(/-/g, "/"))
+    if (sBirthday != (d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate())) { return false };
+    for (var i = 17; i >= 0; i--) iSum += (Math.pow(2, i) % 11) * parseInt(sId.charAt(17 - i), 11)
+    if (iSum % 11 != 1) { return false };
+    return true;
+}
+//=======================验证手机
+function ValidateMobile(mobile) {
+    var ismobi = /^(((1[0-9]{2}))+\d{8})$/.test(mobile);
+    if (!ismobi || isNaN(mobile) || mobile.length != 11) {
+        return false;
+    }
+    return true;
+}
+//======================验证邮箱
+function ValidateEmail(email) {
+    var isemail = /^([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,3}$/.test(email);
+    if (!isemail) {
+        return false;
+    }
+    return true;
+}
+//验证QQ号码5-13位
+function ValidateQQ(qq) {
+    var filter = /^\s*[.0-9]{5,13}\s*$/;
+    if (!filter.test(qq)) {
+        return false;
+    } else {
+        return true;
+    }
+}
+//======================验证字符格式
+function ValidateChar(str) {
+    var isok = /^\w{6,24}$/.test(str);   /*字母数字下划线验证*/
+    if (!isok || isNaN(isok)) {
+        return false;
+    }
+    return true;
+}
+function ValidateCharBig(str) {
+    var isok = /^\w{6,108}$/.test(str);   /*字母数字下划线验证*/
+    if (!isok || isNaN(isok)) {
+        return false;
+    }
+    return true;
+}
+//======================验证数字格式
+function isNumber(s) {
+    var reg = new RegExp("^[0-9]*$");
+    if (!reg.test(s)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+/**
+ * tab切换
+ * @param name
+ * @param cur
+ * @param num
+ */
+function setTab(name, cur, num) {
+    for (var i = 1; i <= num; i++) {
+        var nav = $("#" + name + i);
+        var con = $("#con_" + name + "_" + i);
+        i == cur ? nav.addClass("curr") : nav.removeClass("curr");
+        i == cur ? con.removeClass("hide").addClass("block") : con.addClass("hide").removeClass("block");
+    }
+}
+//=======================登录
+function login() {
+    var url = getUrlParam("url"), mobile = $("#mobile").val(), pwd = $("#pwd").val();
+    /*电话验证*/
+    if (!ValidateMobile(mobile)) {
+        $("#mobile").focus();
+        layer.open({ content: '请输入正确的手机号码', skin: 'msg', time: 2 });
+        return;
+    }
+    if ($("#pwd").val() == "") {
+        $("#pwd").focus();
+        layer.open({ content: '请输入密码', skin: 'msg', time: 2 });
+        return false;
+    }
+    $.ajax({
+        type: "POST",
+        url: api_domain_url + "tools/user_ajax.ashx?act=login",
+        dataType: "json",
+        data: { "mobile": mobile, "pwd": pwd },
+        timeout: 20000,
+        cache: false,
+        success: function (data) {
+            if (data.status == "y") {
+                localStorage.mobile = mobile;
+                localStorage.pwd = data.info;
+                document.location = "../user/index.html";
+            } else {
+                layer.open({ content: data.info, skin: 'msg', time: 2 });
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.open({ content: "状态：" + textStatus + "；出错提示：" + errorThrown, skin: 'msg', time: 2 });
+        }
+    });
+}
+//=======================注册
+function reg() {
+    var agents_id = localStorage.agents_id, staff_id = localStorage.staff_id, rf = localStorage.rf, mobile = $("#mobile").val(), pwd = $("#pwd").val(), pwd2 = $("#pwd2").val(),
+        code_mobile = $("#code_mobile").val(), ref_mobile = $("#ref_mobile").val(), channel_num = $("#channel_num").val(), rfeenceCode = $('#rfeenceCode').val(), promote = localStorage.promote;
+    /*电话验证*/
+    if (!ValidateMobile(mobile)) {
+        $("#mobile").focus();
+        layer.open({ content: '请输入正确的手机号码', skin: 'msg', time: 2 });
+        return;
+    }
+    if (!ValidateChar(pwd)) {
+        $("#pwd").focus();
+        layer.open({ content: '密码由6-24位的字母数字或下划线组成', skin: 'msg', time: 2 });
+        return;
+    }
+    if (pwd2 != pwd) {
+        $("#pwd2").focus();
+        layer.open({ content: '两次输入密码不一致', skin: 'msg', time: 2 });
+        return;
+    }
+    if (code_mobile.length != 6) {
+        $("#code_mobile").focus();
+        layer.open({ content: '请输入正确的短信验证码', skin: 'msg', time: 2 });
+        return;
+    }
+    $.ajax({
+        type: "POST",
+        url: api_domain_url + "tools/user_ajax.ashx?act=reg",
+        dataType: "json",
+        data: { "mobile": mobile, "pwd": pwd, "pwd2": pwd2, code_mobile: code_mobile, ref_mobile: ref_mobile, agents_id: agents_id, staff_id: staff_id, rf: rf, channel_num: channel_num, rfeenceCode: rfeenceCode, promote: promote },
+        timeout: 20000,
+        cache: false,
+        beforeSend: function (XMLHttpRequest) {
+            $("#btnSubmit").attr("disabled", true);
+        },
+        success: function (data, textStatus) {
+            if (data.status == "y") {
+                localStorage.mobile = mobile;
+                localStorage.pwd = data.pwd;
+                alert(data.info);
+                window.location.href = "../user/index.html?is_reg=1";
+            } else {
+                layer.open({ content: data.info, skin: 'msg', time: 2 });
+                $("#btnSubmit").attr("disabled", false);
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            $("#btnSubmit").attr("disabled", false);
+            layer.open({ content: "状态：" + textStatus + "；出错提示：" + errorThrown, skin: 'msg', time: 2 });
+        }
+    });
+}
+function ck_reg() {
+    var mobile = $("#mobile").val();
+    if (mobile.length == 11) {
+        /*电话验证*/
+        if (!ValidateMobile(mobile)) {
+            layer.open({ content: '请输入正确的手机号码', skin: 'msg', time: 2 });
+            $("#mobile").focus();
+            return;
+        }
+        $.get("/tools/user_ajax.ashx", { act: "ck_reg", mobile: mobile }, function (data) {
+            var obj = eval('(' + data + ')');
+            if (obj.status == "n") {
+                layer.open({ content: obj.info, skin: 'msg', time: 2 });
+                return;
+            }
+        });
+    }
+}
+//========================刷新消息
+function refreshmsg(id, t) {
+    if (t > 0) {
+        t--;
+        addCookie("refreshid", id, 4)//刷新的id
+        addCookie("refresht", t, 4)//刷新的时间
+        setTimeout("refreshmsg('" + id + "'," + t + ");", 1000);
+        $("#" + id).val(t + "秒后重发");
+        $("#" + id).attr("disabled", "disabled");
+    } else {
+        $("#" + id).val("重新发送");
+        $("#" + id).removeAttr("disabled");
+    }
+}
+function refreshmsg2(id, t) {
+    if (t > 0) {
+        t--;
+        addCookie("refreshid", id, 4)//刷新的id
+        addCookie("refresht", t, 4)//刷新的时间
+        setTimeout("refreshmsg2('" + id + "'," + t + ");", 1000);
+        $("#" + id).val(t + "秒后重发");
+        $("#" + id).attr("disabled", "disabled");
+    } else {
+        $("#" + id).val("获取验证码");
+        $("#" + id).removeAttr("disabled");
+    }
+}
+//======================发送手机验证码================
+function getsmscode() {
+    var mobile = $("#mobile_phone").val();
+    /*电话验证*/
+    if (!ValidateMobile(mobile)) {
+        TipMsg.position("请输入正确的手机号码", $("#mobile_phone"), 2000, 0, 0); $("#mobile_phone").focus(); return;
+    }
+    $.ajax({
+        type: "GET",
+        url: api_domain_url + "tools/user_ajax.ashx",
+        data: { act: 'smsSend', mobile: mobile },
+        dataType: "text",
+        beforeSend: function () {
+            TipMsg.position("验证码发送中请稍等...", $("#mobile_phone"), 2000, 0, 0); return;
+        },
+        error: function (result) {
+            TipMsg.position("验证码发送出现错误", $("#mobile_phone"), 2000, 0, 0); return;
+        },
+        success: function (data) {
+            var obj = eval('(' + data + ')');
+            if (obj.status == "y") {
+                TipMsg.position(obj.info, $("#mobile_phone"), 2000, 0, 0); return;
+            }
+            else {
+                TipMsg.position(obj.info, $("#mobile_phone"), 2000, 0, 0); return;
+            }
+        }
+    });
+}
+//======================发送手机(交易密码)验证码================
+function getsmsck() {
+    var valicode = $.idcode.validateCode();
+    if (!valicode) {
+        layer.open({ content: '请输入正确的验证码', skin: 'msg', time: 2 });
+        $("#code").focus();
+        return false;
+    }
+    $.ajax({
+        type: "GET",
+        url: api_domain_url + "tools/user_ajax.ashx",
+        data: { act: 'smsSendCK' },
+        dataType: "text",
+        error: function (result) {
+            layer.open({ content: "出错提示：" + result.errorThrown, skin: 'msg', time: 2 });
+        },
+        success: function (data) {
+            var obj = eval('(' + data + ')');
+            if (obj.status == "y") {
+                refreshmsg("btnOnece", 60);
+                layer.open({ content: obj.info, skin: 'msg', time: 2 });
+            } else {
+                layer.open({ content: obj.info, skin: 'msg', time: 2 });
+            }
+        }
+    });
+}
+//======================注册验证码================
+function reg_sms() {
+    var mobile = $("#mobile").val(), code = $("#code").val(), valicode = $.idcode.validateCode();
+    /*电话验证*/
+    if (!ValidateMobile(mobile)) {
+        layer.open({ content: '请输入正确的手机号码', skin: 'msg', time: 2 });
+        $("#mobile").focus();
+        return;
+    }
+    if (!valicode) {
+        layer.open({ content: '请输入正确的验证码', skin: 'msg', time: 2 });
+        $("#code").focus();
+        return false;
+    }
+    $.get(api_domain_url + "tools/user_ajax.ashx", { act: "smsSendReg", mobile: mobile, code: code, valicode: valicode }, function (data) {
+        var obj = eval('(' + data + ')');
+        if (obj.status == "y") {
+            refreshmsg("btnOnece", 60);
+            layer.open({ content: obj.info, skin: 'msg', time: 2 });
+            return;
+        } else {
+            layer.open({ content: obj.info, skin: 'msg', time: 2 });
+            return;
+        }
+    });
+}
+//======================找回密码验证码================
+function findpwd_sms(type) {
+    var mobile = $("#mobile").val(), code = $("#code").val(), valicode = $.idcode.validateCode();
+    /*电话验证*/
+    if (!ValidateMobile(mobile)) {
+        layer.open({ content: '请输入正确的手机号码', skin: 'msg', time: 2 });
+        $("#mobile").focus();
+        return;
+    }
+    if (!valicode) {
+        layer.open({ content: '请输入正确的验证码', skin: 'msg', time: 2 });
+        $("#code").focus();
+        return false;
+    }
+    $.get(api_domain_url + "tools/user_ajax.ashx", { act: "smsSendPwd", mobile: mobile, code: code, valicode: valicode, type: type }, function (data) {
+        var obj = eval('(' + data + ')');
+        if (obj.status == "y") {
+            refreshmsg("btnOnece", 60);
+            layer.open({ content: obj.info, skin: 'msg', time: 2 });
+            return;
+        } else {
+            layer.open({ content: obj.info, skin: 'msg', time: 2 });
+            return;
+        }
+    });
+}
+//======================发送手机验证码================
+function getsmscode_email() {
+    var email_old_mobile = $("#email_old_mobile").val();
+    $.ajax({
+        type: "GET",
+        url: "/tools/user_ajax.ashx",
+        data: { act: 'smsSend', mobile: email_old_mobile },
+        dataType: "text",
+        beforeSend: function () {
+            TipMsg.position("验证码发送中请稍等...", $("#email_mobile_code"), 2000, 0, 0); return;
+        },
+        error: function (result) {
+            TipMsg.position("验证码发送出现错误", $("#email_mobile_code"), 2000, 0, 0); return;
+        },
+        success: function (data) {
+            var obj = eval('(' + data + ')');
+            if (obj.status == "y") {
+                refreshmsg2("btn_email_mobile", 60);
+                TipMsg.position(obj.info, $("#email_mobile_code"), 2000, 0, 0); return;
+            }
+            else {
+                TipMsg.position(obj.info, $("#email_mobile_code"), 2000, 0, 0); return;
+            }
+        }
+    });
+}
+//======================发送邮箱验证码================
+function getemailcode() {
+    var email_new = $("#email_new").val();
+    /*邮箱验证*/
+    if (!ValidateEmail(email_new)) {
+        TipMsg.position("请输入正确的邮箱", $("#email_new"), 2000, 0, 0); $("#email_new").focus(); return;
+    }
+    $.ajax({
+        type: "GET",
+        url: "/tools/user_ajax.ashx",
+        data: { act: 'emailSend', email: email_new },
+        dataType: "text",
+        beforeSend: function () {
+            TipMsg.position("验证码发送中请稍等...", $("#code_email_new"), 2000, 0, 0); $("#code_email_new").focus(); return;
+        },
+        error: function (result) {
+            TipMsg.position("验证码发送出现错误", $("#code_email_new"), 2000, 0, 0); $("#code_email_new").focus(); return;
+        },
+        success: function (data) {
+            var obj = eval('(' + data + ')');
+            if (obj.status == "y") {
+                refreshmsg2("btn_email_new", 60);
+                TipMsg.position(obj.info, $("#code_email_new"), 2000, 0, 0); return;
+            }
+            else {
+                TipMsg.position(obj.info, $("#code_email_new"), 2000, 0, 0); return;
+            }
+        }
+    });
+}
+//======================发送邮箱验证码2================
+function getemailcode2() {
+    var email_old = $("#email_old").val();
+    $.ajax({
+        type: "GET",
+        url: "/tools/user_ajax.ashx",
+        data: { act: 'emailSend', email: email_old },
+        dataType: "text",
+        beforeSend: function () {
+            TipMsg.position("验证码发送中请稍等...", $("#email_old_code"), 2000, 0, 0); $("#email_old_code").focus(); return;
+        },
+        error: function (result) {
+            TipMsg.position("验证码发送出现错误", $("#email_old_code"), 2000, 0, 0); $("#email_old_code").focus(); return;
+        },
+        success: function (data) {
+            var obj = eval('(' + data + ')');
+            if (obj.status == "y") {
+                refreshmsg2("btn_email_old", 60);
+                TipMsg.position(obj.info, $("#email_old_code"), 2000, 0, 0); return;
+            }
+            else {
+                TipMsg.position(obj.info, $("#email_old_code"), 2000, 0, 0); return;
+            }
+        }
+    });
+}
+//=======================找回密码—重设密码
+function pwd_reset() {
+    var mobile = $("#mobile").val(), code = $("#code").val(), valicode = $.idcode.validateCode();
+    var pwd1 = $.trim($("#pwd1").val()), pwd2 = $.trim($("#pwd2").val());
+    /*电话验证*/
+    if (!ValidateMobile(mobile)) {
+        layer.open({ content: '请输入正确的手机号码', skin: 'msg', time: 2 });
+        $("#mobile").focus();
+        return;
+    }
+    if (!valicode) {
+        layer.open({ content: '请输入正确的验证码', skin: 'msg', time: 2 });
+        $("#code").focus();
+        return false;
+    }
+    if (!ValidateChar(pwd1)) {
+        $("#pwd1").focus();
+        layer.open({ content: '密码是数字+字母组成的8-24位字符', skin: 'msg', time: 2 });
+        return;
+    }
+    if (pwd1 != pwd2) {
+        $("#pwd2").focus();
+        layer.open({ content: '两次密码不一致', skin: 'msg', time: 2 });
+        return;
+    }
+    $.ajax({
+        url: api_domain_url + "tools/user_ajax.ashx?act=pwd_reset",
+        dataType: "JSON",
+        contentType: "application/x-www-form-urlencoded;charset=utf-8",
+        type: "post",
+        timeout: 6000,
+        data: $("#form1").serialize(),
+        success: function (data) {
+            if (data.status == "y") {
+                alert(data.info);
+                window.location.href = "../user/login.html";
+                return;
+            }
+            else {
+                layer.open({ content: data.info, skin: 'msg', time: 2 });
+                return;
+            }
+        }
+    });
+}
+//=======================找回密码—重设密码
+function pwd_trans_reset() {
+    var mobile = $("#mobile").val(), code = $("#code").val(), valicode = $.idcode.validateCode();
+    var pwd1 = $.trim($("#pwd1").val()), pwd2 = $.trim($("#pwd2").val());
+    if (!valicode) {
+        layer.open({ content: '请输入正确的验证码', skin: 'msg', time: 2 });
+        $("#code").focus();
+        return false;
+    }
+    if (!ValidateChar(pwd1)) {
+        $("#pwd1").focus();
+        layer.open({ content: '密码由6-24位的字母数字或下划线组成', skin: 'msg', time: 2 });
+        return;
+    }
+    if (pwd1 != pwd2) {
+        $("#pwd2").focus();
+        layer.open({ content: '两次密码不一致', skin: 'msg', time: 2 });
+        return;
+    }
+    $.ajax({
+        url: api_domain_url + "tools/user_ajax.ashx?act=pwd_trans_reset",
+        dataType: "JSON",
+        contentType: "application/x-www-form-urlencoded;charset=utf-8",
+        type: "post",
+        timeout: 6000,
+        data: $("#form1").serialize(),
+        success: function (data) {
+            if (data.status == "y") {
+                alert(data.info);
+                window.location.href = "../../user/account.html";
+                return;
+            }
+            else {
+                layer.open({ content: data.info, skin: 'msg', time: 2 });
+                return;
+            }
+        }
+    });
+}
+
+//=======================删除银行卡
+var delBank = function (bankid) {
+    //询问框
+    layer.open({
+        content: '您确定要删除该银行卡吗？'
+        , btn: ['确定', '取消']
+        , yes: function (index) {
+            $.ajax({
+                url: api_domain_url + "tools/user_opt_ajax.ashx?act=delbank&bankid=" + bankid + "&mobile=" + mobile + "&pwd=" + pwd,
+                dataType: "text",
+                contentType: "application/x-www-form-urlencoded;charset=utf-8",
+                type: "post",
+                timeout: 6000,
+                success: function (data) {
+                    var obj = eval('(' + data + ')');
+                    if (obj.status == "y") {
+                        alert(obj.info);
+                        location.reload();
+                    }
+                    else {
+                        layer.open({ content: data.info, skin: 'msg', time: 2 });
+                        return;
+                    }
+                }
+            });
+        }
+    });
+}
+//=======================添加银行卡
+var bindBank = function () {
+    var pay_ck = $("#pay_ck_ss").val();
+    if (!$("#bank_account_name").val()) {
+        layer.open({ content: "请输入开户人姓名", skin: 'msg', time: 2 });
+        return false;
+    }
+    if (!$("#bank_branch").val()) {
+        layer.open({ content: "开户支行不为空", skin: 'msg', time: 2 });
+        return false;
+    }
+    if (!$("#bank_card").val()) {
+        layer.open({ content: "请输入银行卡号", skin: 'msg', time: 2 });
+        return false;
+    }
+    if (!bankcardCheck($("#bank_card").val())) {
+        layer.open({ content: "银行卡号不合法", skin: 'msg', time: 2 });
+        return false;
+    }
+    if ($("#bank_card2").val() != $("#bank_card").val()) {
+        layer.open({ content: "银行卡号输入不一致", skin: 'msg', time: 2 });
+        return false;
+    }
+    $.ajax({
+        type: "POST",
+        url: api_domain_url + "tools/user_opt_ajax.ashx?act=addbank&mobile=" + mobile + "&pwd=" + pwd,
+        dataType: "json",
+        data: $("#form1").serialize(),
+        timeout: 20000,
+        cache: false,
+        beforeSend: function (XMLHttpRequest) {
+            $("#btnSubmit").attr("disabled", true);
+        },
+        success: function (data, textStatus) {
+            if (data.status == "y") {
+                alert(data.info);
+                if (pay_ck == 1) {
+                    location.href = "../pay/auth.html";
+                } else if (pay_ck == 2) {
+                    location.href = "../cash.html";
+                } else {
+                    location.href = "bankcardlist.html";
+                }
+            } else {
+                $("#btnSubmit").attr("disabled", false);
+                layer.open({ content: data.info, skin: 'msg', time: 2 });
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.open({ content: "状态：" + textStatus + "；出错提示：" + errorThrown, skin: 'msg', time: 2 });
+            $("#btnSubmit").attr("disabled", false);
+        }
+    });
+}
+//=======================实名认证
+function opt_name_true() {
+    var user_name = $("#user_name").val(), id_card = $("#id_card").val(), pay_ck = $("#pay_ck_ss").val();
+    if (user_name.length < 2) {
+        $("#user_name").focus();
+        layer.open({ content: "请输入您的真实姓名", skin: 'msg', time: 2 });
+        return;
+    }
+    /*身份证验证*/
+    if (!ValidateIdCard(id_card)) {
+        $("#id_card").focus();
+        layer.open({ content: "请输入正确的身份证号码", skin: 'msg', time: 2 });
+        return;
+    }
+    $.ajax({
+        type: "POST",
+        url: api_domain_url + "tools/user_opt_ajax.ashx?act=opt_name_true",
+        dataType: "json",
+        data: { "user_name": user_name, "id_card": id_card, "mobile": mobile, "pwd": pwd },
+        timeout: 20000,
+        cache: false,
+        beforeSend: function (XMLHttpRequest) {
+            //layer.open({ type: 2, time: 1 });
+        },
+        success: function (data, textStatus) {
+            if (data.status == "y") {
+                alert(data.info);
+                if (pay_ck == 1) {
+                    location.href = "../pay/auth.html";
+                } else if (pay_ck == 2) {
+                    location.href = "../cash.html";
+                } else {
+                    location.href = "../../user/account.html";
+                }
+                return;
+            } else {
+                layer.open({ content: data.info, skin: 'msg', time: 2 });
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.open({ content: "状态：" + textStatus + "；出错提示：" + errorThrown, skin: 'msg', time: 2 });
+        }
+    });
+}
+//=======================修改邮箱
+function opt_email() {
+    var email = $("#newEmail").val();
+    if (email.length < 2) {
+        $("#newEmail").focus();
+        layer.alert("请输入正确的邮箱！", 8);
+        return;
+    }
+    /*邮箱验证*/
+    if (!ValidateEmail(email)) {
+        $("#email").focus();
+        layer.alert("请输入正确的邮箱！", 8);
+        return;
+    }
+    $.ajax({
+        type: "POST",
+        url: "/tools/user_opt_ajax.ashx?act=opt_email",
+        dataType: "json",
+        data: { "email": email },
+        timeout: 20000,
+        cache: false,
+        beforeSend: function (XMLHttpRequest) {
+            //layer.load(0, { shade: false, time: 2000 });
+        },
+        success: function (data, textStatus) {
+            if (data.status == "y") {
+                alert("保存成功");
+                window.location.reload();
+                return;
+            } else {
+                layer.alert(data.info, 8);
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.alert("状态：" + textStatus + "；出错提示：" + errorThrown, 8);
+        }
+    });
+}
+
+//=======================修改密码
+function changePwd() {
+    var _oldpwd = $.trim($("#oldPwd").val()), _newPwd1 = $.trim($("#newPwd1").val()), _newPwd2 = $.trim($("#newPwd2").val());
+    if (_oldpwd.length < 6) {
+        layer.open({ content: "密码最少6位", skin: 'msg', time: 2 });
+        $("#oldPwd").focus();
+        return;
+    }
+    if (!ValidateChar(_newPwd1)) {
+        layer.open({ content: "密码由6-24位的字母数字或下划线组成", skin: 'msg', time: 2 });
+        $("#newPwd1").focus();
+        return;
+    }
+    if (_newPwd1 != "" && _newPwd1 != _newPwd2) {
+        layer.open({ content: "两次输入密码不一致", skin: 'msg', time: 2 });
+        $("#newPwd2").focus();
+        return;
+    }
+    $.ajax({
+        url: api_domain_url + "tools/user_opt_ajax.ashx?act=pwd",
+        dataType: "json",
+        type: "post",
+        timeout: 20000,
+        cache: false,
+        data: { "oldPwd": _oldpwd, "newPwd1": _newPwd1, "mobile": mobile, "pwd": pwd },
+        beforeSend: function (XMLHttpRequest) {
+            //layer.open({ type: 2, time: 1 });
+        },
+        success: function (data) {
+            if (data.status == "y") {
+                alert(data.info);
+                location.href = "../../user/account.html";
+                return;
+            } else {
+                layer.open({ content: data.info, skin: 'msg', time: 2 });
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.open({ content: "状态：" + textStatus + "；出错提示：" + errorThrown, skin: 'msg', time: 2 });
+        }
+    });
+}
+
+//=======================修改提现密码
+function optTransPwd() {
+    var _oldpwd = $.trim($("#oldPwd").val()), _newPwd1 = $.trim($("#newPwd1").val()), _newPwd2 = $.trim($("#newPwd2").val());
+    if (_oldpwd.length < 6) {
+        layer.open({ content: "密码6位哦", skin: 'msg', time: 2 });
+        $("#oldPwd").focus();
+        return;
+    }
+    if (_newPwd1 != "" && _newPwd1 != _newPwd2) {
+        layer.open({ content: "两次输入密码不一致", skin: 'msg', time: 2 });
+        return;
+    }
+    $.ajax({
+        url: api_domain_url + "tools/user_opt_ajax.ashx?act=pwd_trans",
+        dataType: "json",
+        type: "post",
+        timeout: 20000,
+        cache: false,
+        data: { "oldPwd": _oldpwd, "newPwd1": _newPwd1, "mobile": mobile, "pwd": pwd },
+        beforeSend: function (XMLHttpRequest) {
+            //layer.open({ type: 2, time: 1 });
+        },
+        success: function (data) {
+            if (data.status == "y") {
+                alert(data.info);
+                location.href = "../../user/account.html";
+                return;
+            } else {
+                layer.open({ content: data.info, skin: 'msg', time: 2 });
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.open({ content: "状态：" + textStatus + "；出错提示：" + errorThrown, skin: 'msg', time: 2 });
+        }
+    });
+}
+
+//=======================设置提现密码
+function addTransPwd() {
+    var _newPwd1 = $.trim($("#newPwd1").val()), _newPwd2 = $.trim($("#newPwd2").val());
+    if (_newPwd1 != "" && _newPwd1 != _newPwd2) {
+        layer.open({ content: "两次输入密码不一致", skin: 'msg', time: 2 });
+        return;
+    }
+    $.ajax({
+        url: api_domain_url + "tools/user_opt_ajax.ashx?act=pwd_trans_add",
+        dataType: "json",
+        type: "post",
+        timeout: 20000,
+        cache: false,
+        data: { "newPwd2": _newPwd2, "newPwd1": _newPwd1, "mobile": mobile, "pwd": pwd },
+        beforeSend: function (XMLHttpRequest) {
+            //layer.open({ type: 2, time: 1 });
+        },
+        success: function (data) {
+            if (data.status == "y") {
+                alert(data.info);
+                location.href = "../../user/account.html";
+                return;
+            } else {
+                layer.open({ content: data.info, skin: 'msg', time: 2 });
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.open({ content: "状态：" + textStatus + "；出错提示：" + errorThrown, skin: 'msg', time: 2 });
+        }
+    });
+}
+
+//=======================修改资料
+function opt_account() {
+    var qq = $("#qq").val(), address = $("#address").val(), nick_name = $("#nick_name").val();
+    $.ajax({
+        type: "POST",
+        url: "/tools/user_opt_ajax.ashx?act=opt",
+        dataType: "json",
+        data: { "qq": qq, "address": address, "nick_name": nick_name },
+        timeout: 20000,
+        cache: false,
+        beforeSend: function (XMLHttpRequest) {
+            //layer.load("正在保存修改，请稍候...", 2);
+        },
+        success: function (data, textStatus) {
+            if (data.status == "y") {
+                alert("保存成功");
+                window.location.reload();
+                return;
+            } else {
+                layer.alert(data.info, 8);
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.alert("状态：" + textStatus + "；出错提示：" + errorThrown, 8);
+        }
+    });
+}
+//=======================我要提款
+var withdrawal = function () {
+    var tkyhk = $("#tkyhk").val(), cash_money = $("#cash_money").val(), trade_pass = $("#trade_pass").val();
+    if (isNaN(cash_money)) {
+        $("#cash_money").focus();
+        layer.open({ content: '提款金额必须是数字', skin: 'msg', time: 2 });
+        return;
+    }
+    if (cash_money < 2) {
+        $("#cash_money").focus();
+        layer.open({ content: '提款金额必须大于2元', skin: 'msg', time: 2 });
+        return;
+    }
+    if (tkyhk == "") {
+        $("#tkyhk").focus();
+        layer.open({ content: '请选择提款银行卡', skin: 'msg', time: 2 });
+        return;
+    }
+    if (trade_pass == "") {
+        $("#trade_pass").focus();
+        layer.open({ content: '请输入提现密码', skin: 'msg', time: 2 });
+        return;
+    }
+    $.ajax({
+        url: "/tools/user_opt_ajax.ashx?act=withdrawal&mobile=" + mobile + "&pwd=" + pwd,
+        dataType: "text",
+        contentType: "application/x-www-form-urlencoded;charset=utf-8",
+        type: "post",
+        dataType: "json",
+        timeout: 6000,
+        data: $("#form1").serialize(),
+        beforeSend: function (XMLHttpRequest) {
+            //layer.open({ type: 2, time: 1 });
+        },
+        success: function (data) {
+            if (data.status == "y") {
+                alert(data.info);
+                location.href = "../user/index.html";
+            }
+            else {
+                layer.open({ content: data.info, skin: 'msg', time: 2 });
+                return;
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.open({ content: "状态：" + textStatus + "；出错提示：" + errorThrown, skin: 'msg', time: 2 });
+        }
+    });
+}
+//=======================微信充值
+function pay_by_wechat() {
+    var total = $("#wechat_total").val();
+    if (total.length < 1) {
+        $("#wechat_total").focus();
+        layer.open({ content: '请填写转账金额', skin: 'msg', time: 2 });
+        return;
+    }
+    if (isNaN(total)) {
+        $("#wechat_total").focus();
+        layer.open({ content: '转账金额必须是数字', skin: 'msg', time: 2 });
+        return false;
+    }
+    $.ajax({
+        type: "POST",
+        url: "/tools/user_opt_ajax.ashx?act=pay_by_wechat&mobile=" + mobile + "&pwd=" + pwd,
+        dataType: "json",
+        data: $("#form1").serialize(),
+        timeout: 20000,
+        cache: false,
+        beforeSend: function (XMLHttpRequest) {
+            //layer.open({ type: 2, time: 1 });
+        },
+        success: function (data, textStatus) {
+            if (data.status == "y") {
+                alert(data.info);
+                location.href = "../../user/pay.html";
+                return;
+            } else {
+                layer.open({ content: data.info, skin: 'msg', time: 2 });
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.open({ content: "状态：" + textStatus + "；出错提示：" + errorThrown, skin: 'msg', time: 2 });
+        }
+    });
+}
+//=======================支付宝充值
+function pay_by_alipay() {
+    var total = $("#alipay_total").val();
+    if (total.length < 1) {
+        $("#alipay_total").focus();
+        layer.open({ content: '请填写转账金额', skin: 'msg', time: 2 });
+        return;
+    }
+    if (isNaN(total)) {
+        $("#alipay_total").focus();
+        layer.open({ content: '转账金额必须是数字', skin: 'msg', time: 2 });
+        return false;
+    }
+    $.ajax({
+        type: "POST",
+        url: "/tools/user_opt_ajax.ashx?act=pay_by_alipay&mobile=" + mobile + "&pwd=" + pwd,
+        dataType: "json",
+        data: $("#form1").serialize(),
+        timeout: 20000,
+        cache: false,
+        beforeSend: function (XMLHttpRequest) {
+            //layer.open({ type: 2, time: 1 });
+        },
+        success: function (data, textStatus) {
+            if (data.status == "y") {
+                //alert(data.info);
+                //location.href = "../../user/pay.html";
+                $(".pay_step_1").css("display", "none");
+                $(".pay_step_2").css("display", "block");
+                return;
+            } else {
+                layer.open({ content: data.info, skin: 'msg', time: 2 });
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.open({ content: "状态：" + textStatus + "；出错提示：" + errorThrown, skin: 'msg', time: 2 });
+        }
+    });
+}
+//=======================银行充值
+function pay_by_bank() {
+    var total = $("#amount").val();
+    if (total.length < 1) {
+        $("#amount").focus();
+        layer.open({ content: '请填写转账金额', skin: 'msg', time: 2 });
+        return;
+    }
+    if (isNaN(total)) {
+        $("#amount").focus();
+        layer.open({ content: '转账金额必须是数字', skin: 'msg', time: 2 });
+        return false;
+    }
+    if (total < 100) {
+        $("#amount").focus();
+        layer.open({ content: '转账金额必须大于100元', skin: 'msg', time: 2 });
+        return false;
+    }
+    $.ajax({
+        type: "POST",
+        url: "/tools/user_opt_ajax.ashx?act=pay_by_bank&mobile=" + mobile + "&pwd=" + pwd,
+        dataType: "json",
+        data: $("#form1").serialize(),
+        timeout: 20000,
+        cache: false,
+        beforeSend: function (XMLHttpRequest) {
+            //layer.open({ type: 2, time: 1 });
+        },
+        success: function (data, textStatus) {
+            if (data.status == "y") {
+                alert(data.info);
+                location.href = "../../user/pay.html";
+                return;
+            } else {
+                layer.open({ content: data.info, skin: 'msg', time: 2 });
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.open({ content: "状态：" + textStatus + "；出错提示：" + errorThrown, skin: 'msg', time: 2 });
+        }
+    });
+}
+//=======================删除自选股票
+var mine_stock_d = function (stock_code) {
+    layer.open({
+        content: '请选择您要进行的操作？'
+        , btn: ['策略买股', '删除自选']
+        , yes: function (index) {
+            location.href = "../trans/buy.html?stock_code=" + stock_code;
+            layer.close(index);
+        }, no: function (index) {
+            $.ajax({
+                url: api_domain_url + "tools/user_opt_ajax.ashx?act=del_mine_stock&code=" + stock_code + "&mobile=" + mobile + "&pwd=" + pwd,
+                dataType: "json",
+                contentType: "application/x-www-form-urlencoded;charset=utf-8",
+                type: "post",
+                timeout: 6000,
+                success: function (data) {
+                    if (data.status == "y") {
+                        layer.open({ content: data.info, skin: 'msg', time: 2 });
+                        list_mine_stock();
+                    }
+                    else {
+                        layer.open({ content: data.info, skin: 'msg', time: 2 });
+                        return;
+                    }
+                }
+            });
+        }
+    });
+}
+var mine_stock_d_ck = function (stock_code, name) {
+    layer.open({
+        content: '请确定要删除该自选股票吗？'
+        , btn: ['确定', '取消']
+        , yes: function (index) {
+            $.ajax({
+                url: api_domain_url + "tools/user_opt_ajax.ashx?act=del_mine_stock&code=" + stock_code + "&mobile=" + mobile + "&pwd=" + pwd,
+                dataType: "json",
+                contentType: "application/x-www-form-urlencoded;charset=utf-8",
+                type: "post",
+                timeout: 6000,
+                success: function (data) {
+                    if (data.status == "y") {
+                        layer.open({ content: data.info, skin: 'msg', time: 2 });
+                        $(".mine_stock").removeClass("icon-delete");
+                        $(".mine_stock").addClass("icon-add");
+                        $(".mine_stock").attr("onclick", "mine_stock_a_ck(this,\"" + stock_code + "\",\"" + name + "\")");
+                    }
+                    else {
+                        layer.open({ content: data.info, skin: 'msg', time: 2 });
+                        return;
+                    }
+                }
+            });
+        }, no: function (index) {
+            layer.close(index);
+        }
+    });
+}
+var mine_stock_d_ck2 = function (obj, stock_code, name) {
+    layer.open({
+        content: '请确定要删除该自选股票吗？'
+        , btn: ['确定', '取消']
+        , yes: function (index) {
+            $.ajax({
+                url: api_domain_url + "tools/user_opt_ajax.ashx?act=del_mine_stock&code=" + stock_code + "&mobile=" + mobile + "&pwd=" + pwd,
+                dataType: "json",
+                contentType: "application/x-www-form-urlencoded;charset=utf-8",
+                type: "post",
+                timeout: 6000,
+                success: function (data) {
+                    if (data.status == "y") {
+                        layer.open({ content: data.info, skin: 'msg', time: 2 });
+                        $(obj).html("+自选");
+                        $(obj).attr("onclick", "mine_stock_a2(this,\"" + stock_code + "\",\"" + name + "\")");
+                    }
+                    else {
+                        layer.open({ content: data.info, skin: 'msg', time: 2 });
+                        return;
+                    }
+                }
+            });
+        }, no: function (index) {
+            layer.close(index);
+        }
+    });
+}
+//=======================添加自选股票
+var mine_stock_a = function (obj, stock_code, name) {
+    layer.open({
+        content: '请选择您要将该票加入自选吗？'
+        , btn: ['确定', '取消']
+        , yes: function (index) {
+            $.ajax({
+                url: api_domain_url + "tools/user_opt_ajax.ashx?act=add_mine_stock&code=" + stock_code + "&name=" + name + "&mobile=" + mobile + "&pwd=" + pwd,
+                dataType: "json",
+                contentType: "application/x-www-form-urlencoded;charset=utf-8",
+                type: "post",
+                timeout: 6000,
+                success: function (data) {
+                    if (data.status == "y") {
+                        layer.open({ content: data.info, skin: 'msg', time: 2 });
+                        $(obj).remove();
+                    }
+                    else {
+                        layer.open({ content: data.info, skin: 'msg', time: 2 });
+                        return;
+                    }
+                }
+            });
+        }, no: function (index) {
+            layer.close(index);
+        }
+    });
+}
+var mine_stock_a2 = function (obj, stock_code, name) {
+    layer.open({
+        content: '请选择您要将该票加入自选吗？'
+        , btn: ['确定', '取消']
+        , yes: function (index) {
+            $.ajax({
+                url: api_domain_url + "tools/user_opt_ajax.ashx?act=add_mine_stock&code=" + stock_code + "&name=" + name + "&mobile=" + mobile + "&pwd=" + pwd,
+                dataType: "json",
+                contentType: "application/x-www-form-urlencoded;charset=utf-8",
+                type: "post",
+                timeout: 6000,
+                success: function (data) {
+                    if (data.status == "y") {
+                        layer.open({ content: data.info, skin: 'msg', time: 2 });
+                        $(obj).html("-自选");
+                        $(obj).attr("onclick", "mine_stock_d_ck2(this,\"" + stock_code + "\",\"" + name + "\")");
+                    }
+                    else {
+                        layer.open({ content: data.info, skin: 'msg', time: 2 });
+                        return;
+                    }
+                }
+            });
+        }, no: function (index) {
+            layer.close(index);
+        }
+    });
+}
+var mine_stock_a_ck = function (obj, stock_code, name) {
+    layer.open({
+        content: '请选择您要将该票加入自选吗？'
+        , btn: ['确定', '取消']
+        , yes: function (index) {
+            $.ajax({
+                url: api_domain_url + "tools/user_opt_ajax.ashx?act=add_mine_stock&code=" + stock_code + "&name=" + name + "&mobile=" + mobile + "&pwd=" + pwd,
+                dataType: "json",
+                contentType: "application/x-www-form-urlencoded;charset=utf-8",
+                type: "post",
+                timeout: 6000,
+                success: function (data) {
+                    if (data.status == "y") {
+                        layer.open({ content: data.info, skin: 'msg', time: 2 });
+                        $(".mine_stock").removeClass("icon-add");
+                        $(".mine_stock").addClass("icon-delete");
+                        $(".mine_stock").attr("onclick", "mine_stock_d_ck(\"" + stock_code + "\",\"" + name + "\")");
+                    }
+                    else {
+                        layer.open({ content: data.info, skin: 'msg', time: 2 });
+                        return;
+                    }
+                }
+            });
+        }, no: function (index) {
+            layer.close(index);
+        }
+    });
+}
+//=======================检查自选股票
+var mine_stock_ck = function (stock_code, name) {
+    $.getJSON(api_domain_url + "tools/user_opt_ajax.ashx", { act: "ck_mine_stock", code: stock_code, mobile: mobile, pwd: pwd, t: new Date() }, function (data) {
+        $(".mine_stock").removeClass("icon-delete").removeClass("icon-add");
+        if (data.status == "y") {
+            $(".mine_stock").removeClass("icon-add");
+            $(".mine_stock").addClass("icon-delete");
+            $(".mine_stock").attr("onclick", "mine_stock_d_ck(\"" + stock_code + "\",\"" + name + "\")");
+            return
+        }
+        else {
+            $(".mine_stock").removeClass("icon-delete");
+            $(".mine_stock").addClass("icon-add");
+            $(".mine_stock").attr("onclick", "mine_stock_a_ck(this,\"" + stock_code + "\",\"" + name + "\")");
+            return;
+        }
+    });
+}
+//在线快捷充值
+var pay_by_quick = function () {
+    var money = parseFloat($("#quick_money").val()), user_id = $('#user_id').val();
+    if (isNaN(money)) {
+        $("#quick_money").focus();
+        layer.open({ content: '请输入充值金额', skin: 'msg', time: 2 });
+        return false;
+    }
+    if (money <= 100) {
+        $("#quick_money").focus();
+        layer.open({ content: '充值金额不能小于100元', skin: 'msg', time: 2 });
+        return false;
+    }
+    $("#quick_money").val("");
+    window.open(api_domain_web_url + "api/lianlianpay_quick/index.aspx?user_id=" + user_id + "&amount=" + money, "_blank");
+}
+//在线认证充值
+var pay_by_auth = function () {
+    var money = parseFloat($("#quick_money").val()), user_id = $('#user_id').val(), bank_id = $('#bank_id').val();
+    if (isNaN(money)) {
+        $("#quick_money").focus();
+        layer.open({ content: '请输入充值金额', skin: 'msg', time: 2 });
+        return false;
+    }
+    if (money < 100) {
+        $("#quick_money").focus();
+        layer.open({ content: '充值金额不能小于100元', skin: 'msg', time: 2 });
+        return false;
+    }
+    if (isNaN(bank_id)) {
+        layer.open({ content: '请选择您要认证支付的银行卡', skin: 'msg', time: 2 });
+        return false;
+    }
+    $("#quick_money").val("");
+    window.open(api_domain_web_url + "api/lianlianpay_auth/index.aspx?user_id=" + user_id + "&amount=" + money + "&bank_id=" + bank_id + "&pwd=" + pwd, "_blank");
+}
+//扫码充值
+var pay_by_sm = function () {
+    var money = parseFloat($("#sm_money").val()), user_id = $('#user_id').val(), scancode_type = $('#scancode_type').val();
+    if (isNaN(money)) {
+        $("#sm_money").focus();
+        layer.open({ content: '请输入充值金额', skin: 'msg', time: 2 });
+        return false;
+    }
+    if (money <= 0) {
+        $("#sm_money").focus();
+        layer.open({ content: '充值金额不能小于0元', skin: 'msg', time: 2 });
+        return false;
+    }
+    if (scancode_type == "") {
+        layer.open({ content: '请选择您要扫码方式', skin: 'msg', time: 2 });
+        return false;
+    }
+    $("#sm_money").val("");
+    window.open(api_domain_web_url + "api/umpay_sm/index.aspx?user_id=" + user_id + "&amount=" + money + "&scancode_type=" + scancode_type + "&pwd=" + pwd, "_blank");
+}
+
+//=======================领取体验金
+var getReceive = function () {
+    var phone_mobile = $("#phone_mobile").val();
+    /*电话验证*/
+    if (!ValidateMobile(phone_mobile)) {
+        $("#phone_mobile").focus();
+        layer.open({ content: '请输入正确的手机号码', skin: 'msg', time: 2 });
+        return;
+    }
+    $.ajax({
+        type: "POST",
+        url: "/tools/user_opt_ajax.ashx?act=getReceive&phone_mobile=" + phone_mobile,
+        dataType: "json",
+        timeout: 20000,
+        cache: false,
+        beforeSend: function (XMLHttpRequest) {
+            //layer.open({ type: 2, time: 1 });
+        },
+        success: function (data, textStatus) {
+            if (data.status == "y") {
+                $("#phone_mobile").val("");
+                layer.open({
+                    content: data.info, btn: ['确定', '取消'], yes: function (index) {
+                        location.href = "https://m.58celve.com/user/reg.html?promote=1&agents=157";
+                        return;
+                    }, no: function (index) {
+                        layer.close(index);
+                    }
+                });
+            } else {
+                layer.open({ content: data.info, skin: 'msg', time: 2 });
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.open({ content: "状态：" + textStatus + "；出错提示：" + errorThrown, skin: 'msg', time: 2 });
+        }
+    });
+}
+//=======================领取体验金人数
+var getReceiveNum = function () {
+    $.ajax({
+        type: "POST",
+        url: "/tools/user_opt_ajax.ashx?act=getReceiveNum&phone_mobile=",
+        dataType: "json",
+        timeout: 20000,
+        cache: false,
+        success: function (data, textStatus) {
+            if (data.status == "y") {
+                $("#num").html(data.info);
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            layer.open({ content: "状态：" + textStatus + "；出错提示：" + errorThrown, skin: 'msg', time: 2 });
+        }
+    });
+}

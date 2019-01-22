@@ -1,0 +1,441 @@
+$(function () {
+    $(".ui-icon-help").each(function () {
+        $(this).tips();
+    });
+    //股票查询切换
+    $(".stock-name").click(function () {
+        stock_keyup(event);
+        $(".stock-search").show();
+    });
+    $(".stock-search").find('.search-btn').click(function () {
+        $(".stock-search").hide();
+        $("stock-name").show();
+    });
+})
+//=======================点买
+function stock_buy(type_id) {
+    var money_deposit = parseFloat($("#money_deposit").val()).toFixed(2);
+    var money_borrow = $("#money_borrow").val();
+    var money_times = $("#money_times").val();
+
+    var type_id = parseInt($("#type_id").val());
+    var stock_code = $("#stock_code").val();
+    var stock_name = $("#stock_name").val();
+    var max_buy_num = $("#max_buy_num").val();
+    var rate_open_line = $("#rate_open_line").val();
+    var fee_money = parseFloat($("#fee_money").val()).toFixed(2);
+    var redpacket_money = parseFloat($("#redpacket_money").val()).toFixed(2);
+    var money_balance = parseFloat($("#money_balance").val());
+    var maxprice = parseFloat($("#decl_price").attr("maxprice")),
+        minprice = parseFloat($("#decl_price").attr("minprice")),
+        price = parseFloat($("#decl_price").val()),
+        price_now = parseFloat($(".price_now").html());
+    if (type_id > 0) {
+        if (money_borrow % 1000 != 0) {
+            layer.alert("点买金额不正确,值必须是1000的倍数！");
+            return;
+        }
+        if (money_borrow < 1000) {
+            layer.alert("点买金额不正确,值必须是1000的倍数！");
+            return;
+        }
+    }
+    if (stock_code == '' || stock_name == '') {
+        layer.alert("请选择要点买的股票！");
+        return;
+    }
+    if ($("#agree").prop('checked') == false) {
+        layer.alert("请选择签署协议！");
+        return;
+    }
+    if (money_balance < parseFloat(money_deposit + fee_money - redpacket_money)) {
+        layer.confirm('余额不足,立即前往充值？', {
+            btn: ['确定'] //按钮
+        }, function () {
+            location.href = "/user/pay.aspx";
+        });
+        return;
+    }
+
+    layer.confirm("点买股票：" + stock_name + "(" + stock_code.toString() + ")<br/>点买数量：" + max_buy_num + "股<br/>您确定要委托买入该股票吗？", {
+        btn: ['确定'] //按钮
+    }, function () {
+        $.ajax({
+            type: "post",
+            dataType: "JSON",
+            url: "/tools/user_opt_ajax.ashx?act=AstockPay",
+            data: $("#form1").serialize(),
+            beforeSend: function () {
+                layer.load(0, { shade: false, time: 2000 });
+            },
+            success: function (result) {
+                layer.close();
+                if (result.status == "y") {
+                    layer.alert(result.info, 9, function () {
+                        if (type_id == 1) {
+                            location.href = "/trans/sale.aspx";
+                        } else {
+                            location.href = "/transfree/sale.aspx";
+                        }
+                    });
+                } else {
+                    layer.alert(result.info, 8);
+                }
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                layer.alert("状态：" + textStatus + "；出错提示：" + errorThrown, 8);
+            }
+        });
+    });
+}
+
+//=======================委托卖出
+function stock_sale(data_id, stock_code, stock_name, stock_num) {
+    var data = {};
+    data.name = stock_name;
+    data.stock_code = stock_code;
+    data.data_id = data_id;
+    data.stock_num = stock_num;
+
+    if (data.stock_code.length != 6) {
+        layer.alert("该账户持有的股票代码有误！", 8);
+        return false;
+    }
+    layer.confirm("点卖股票：" + stock_name + "(" + stock_code.toString() + ")<br/>点卖数量：" + stock_num + "股<br/>您确定要委托卖出该股票吗？", {
+        btn: ['确定'] //按钮
+    }, function () {
+        $.ajax({
+            url: "/tools/user_opt_ajax.ashx?act=stock_sale",
+            dataType: "JSON",
+            type: "post",
+            timeout: 6000,
+            async: false,
+            cache: false,
+            data: data,
+            beforeSend: function () {
+                layer.load(0, { shade: false, time: 2000 });
+            },
+            success: function (data) {
+                layer.closeAll();
+                if (data.status == "y") {
+                    var type_id = $("#type_id").val();
+                    stock_list_sale(type_id);
+                }
+                else {
+                    layer.alert(data.info, 8);
+                    return false;
+                }
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                layer.alert("状态：" + textStatus + "；出错提示：" + errorThrown, 8);
+            }
+        });
+    });
+}
+
+//=======================委托撤单
+function cancel_apply(id, type_id) {
+    if (parseInt(id) < 1) {
+        layer.alert("您提交的信息不正确", 8);
+    }
+    layer.confirm('您确定要将该笔点买/卖委托撤单吗？', {
+        btn: ['确定'] //按钮
+    }, function () {
+        $.ajax({
+            type: "post",
+            dataType: "JSON",
+            url: "/tools/user_opt_ajax.ashx?act=cancel_apply",
+            data: { id: id },
+            beforeSend: function () {
+                layer.load(0, { shade: false, time: 2000 });
+            },
+            success: function (data) {
+                layer.closeAll();
+                if (data.status == "y") {
+                    layer.alert(data.info, 8);
+                    cancel_list(type_id);
+                } else {
+                    layer.alert(data.info, 8);
+                }
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                layer.alert("状态：" + textStatus + "；出错提示：" + errorThrown, 8);
+            }
+        });
+    });
+}
+//检查股票金额
+var ck_money_code = function () {
+    var money_deposit = $("#money_deposit").val();
+    var money_borrow = $("#money_borrow").val();
+    var money_times = $("#money_times").val();
+    getproduct(money_deposit, money_borrow, money_times, 1);
+}
+//检查金额
+var ck_money = function (obj, times, money_deposit, money_borrow) {
+    $(".money_deposit_box").find("a").removeClass("curr");
+    $(obj).addClass("curr");
+    getproduct(money_deposit, money_borrow, times, 1);
+}
+//产品信息
+var getproduct = function (money, money_borrow, times, days) {
+    var stock_code = $("#stock_code").val();
+    if (stock_code.substring(0, 1) === '3') {
+        $('a[times=3]').hide();
+    } else {
+        $('a[times=3]').show();
+    }
+    var productid = 0;
+    var rate_open_line = 0;
+    var fee_night = 0;
+    var fee_money = 0;
+    var money_times = 0;
+    var rate_deferred = 0;
+    money = parseFloat(money);
+    money_borrow = parseFloat(money_borrow);
+    times = parseFloat(times);
+    if (money != "" && money != 0) {
+        var open_line = 0;
+        $.each(products, function (i, v) {
+            if (v.money_deposit == money && v.money_times == times && money_borrow >= v.money_min && money_borrow <= v.money_max) {
+                //if (stock_code.indexOf("3") == 0) {
+                //    open_line = v.rate_open_line - 0.1;
+                //} else {
+                //    open_line = v.rate_open_line;
+                //}
+                open_line = v.rate_open_line;
+                productid = v.id;
+                rate_open_line = (0 - money * open_line);
+                fee_money = money_borrow * v.money_rate;
+                fee_night = money_borrow * v.money_fee_rate;
+                money_times = v.money_times;
+                rate_deferred = money * v.rate_deferred;
+            }
+        });
+    }
+
+    $(".rate_open_line").html(fMoney(rate_open_line, 2));
+    $(".fee_money").html(fMoney(fee_money, 2));
+    $(".fee_night").html(fMoney(fee_night, 2));
+    $(".rate_deferred").html(rate_deferred);
+    $("#productid").val(productid);
+    $("#money_deposit").val(money);
+    $("#money_borrow").val(money_borrow);
+    $("#money_times").val(money_times);
+    $("#fee_money").val(fee_money);
+    $("#rate_open_line").val(rate_open_line);
+
+    var price_now = parseFloat($(".price_now").html());//当前价格
+    var max_buy_num = parseFloat(money_borrow / price_now).toFixed(2);
+    var num_else = max_buy_num % 100;
+    max_buy_num = max_buy_num - num_else;
+    var max_user_money = max_buy_num * price_now;
+    var max_buy_percent = parseFloat(max_user_money / money_borrow * 100).toFixed(2);
+    $(".max_buy_num").html(max_buy_num);
+    $(".max_buy_percent").html(max_buy_percent);
+    $("#max_buy_num").val(max_buy_num);
+    var totalPay = parseFloat(money) + parseFloat(fee_money);
+    $(".totalPay").html(totalPay);
+
+    redbagCk();
+}
+//委托卖出检查信息
+function sale_show(_this, now_price, stock_num, buy_price) {
+    var time = $(_this).parents("tr").find("td").eq(0).html().replace("<br>", " ");
+    var stock_name = $(_this).parents("tr").find("td").eq(1).html().replace("<br>", " ");
+    var price_buy = parseFloat($(_this).parents("tr").find("td").eq(2).html().replace("<br>", " ").replace("元", ""));
+    var deal_num = parseInt($(_this).parents("tr").find("td").eq(3).html().replace("<br>", " ").replace("股", ""));
+    var deal_price = parseFloat($(_this).parents("tr").find("td").eq(4).html().replace("<br>", " ").replace("元", ""));
+    var price_profit = $(_this).parents("tr").find("td").eq(5).html().replace("<br>", " ").replace("元", "");
+
+    $("#data_name").val($(_this).attr("data_name"));
+    $("#data_code").val($(_this).attr("data_code"));
+    $("#data_id").val($(_this).attr("data_id"));
+
+    var strHtml = " <table class='table'><thead></thead><tbody>";
+    strHtml += "<tr class='active'><td colspan='3' class='td2'>" + stock_name + "</td></tr>";
+    strHtml += "<tr><td>成本价格：<span class='s-cost td3'>" + price_buy + "元</span></td><td>点卖股票：<span class='s-stock td2'>" + stock_name + "</span></td><td>点卖数量：<span class='s-amount td4'>" + deal_num + "</span>股</td></tr>";
+    strHtml += "<tr><td>申请价格：<span class='s-apply td5'>" + deal_price + "元</span></td><td>申请时间：<span class='s-time td1'>" + time + "</span></td><td>委托卖出类型：<span class='s-type'>市价委托卖出</span></td></tr>";
+    strHtml += "<tr><td>预计盈亏：<span class='s-profitLoss td6'>" + price_profit + "元</span></td><td></td><td></td></tr>";
+    strHtml += "<tr><td colspan='3' class='td2' style='text-align: center;'><a href='javascript:void(0)' class='btn btn-danger' id='btok' onclick='stock_sale(this," + now_price + "," + stock_num + "," + buy_price + ");'>确定</a></td></tr>";
+    strHtml += " </tbody></table>";
+
+
+    if (parseFloat(price_profit) > 0) {
+        $(".td6").addClass("text-danger");
+    } else {
+        $(".td6").addClass("text-success");
+    }
+    //页面层
+    layer.open({
+        type: 1,
+        title: '点卖',
+        skin: 'layui-layer-rim', //加上边框
+        area: ['660px', '280px'], //宽高
+        content: strHtml
+    });
+}
+//结算详情
+var dialog_detail = function (id) {
+    layer.open({
+        type: 2,
+        title: '结算详情',
+        shadeClose: true,
+        shade: 0.8,
+        area: ['860px', '560px'],
+        content: '/trans/detail.aspx?id=' + id
+    });
+}
+//追加保证金
+var open_deposite = function (dataid, money_open_line) {
+    var strhtml = "<div class='db-con'>";
+    strhtml += "<div class='ui-sub-form'><label class='ui-label'>当前止损</label><span class='txt-down'>" + money_open_line + "</span> 元</div>";
+    strhtml += "<div class='ui-sub-form'><label class='ui-label'>追加金额</label><input class='ui-input' id='amount' onkeyup='changeLossFee(this," + money_open_line + ")'  style='width: 240px;' type='text' placeholder='追加金额为100的倍数'></div>";
+    strhtml += "<div class='ui-sub-form'><label class='ui-label'>追加后止损</label><span id='spDown' class='txt-down'>" + money_open_line + "</span> 元</div>";
+    strhtml += "<div class='ui-sub-form' style='padding-bottom: 0;'><input type='button' class='btn-a' value='提交' onclick='return open_deposite_add(" + dataid + ");'></div>";
+    strhtml += "</div>";
+    //页面层
+    layer.open({
+        title: '追加保证金',
+        type: 1,
+        skin: 'layui-layer-rim', //加上边框
+        area: ['460px', '260px'], //宽高
+        content: strhtml
+    });
+}
+//设置止盈价格
+var open_pricestop = function (dataid, money_open_line) {
+    var strhtml = "<div class='db-con'>";
+    strhtml += "<div class='ui-sub-form'><label class='ui-label'>止盈金额</label><input class='ui-input' id='amount' onkeyup='changeLossFee(this," + money_open_line + ")'  style='width: 240px;' type='text' placeholder='止盈金额为100的倍数'></div>";
+    strhtml += "<div class='ui-sub-form' style='padding-bottom: 0;'><input type='button' class='btn-a' value='取消止盈' onclick='return open_price_add(" + dataid + ");'>&nbsp;&nbsp;&nbsp;<input type='button' class='btn-a' value='确认' onclick='return open_price_add(" + dataid + ");'></div>";
+    strhtml += "</div>";
+    //页面层
+    layer.open({
+        title: '设置止盈金额',
+        type: 1,
+        skin: 'layui-layer-rim', //加上边框
+        area: ['460px', '200px'], //宽高
+        content: strhtml
+    });
+}
+//追加保证金
+var changeLossFee = function (obj, money_open_line) {
+    var amount = $(obj).val();
+    if (isNaN(amount)) {
+        $("#spDown").html("--");
+        return;
+    }
+    if (amount % 100 != 0) {
+        $("#spDown").html("--");
+        return;
+    }
+    $("#spDown").html(parseFloat(money_open_line) - parseFloat(amount));
+}
+//追加保证金
+var open_deposite_add = function (dataid) {
+    var amount = $("#amount").val();
+    layer.confirm('您确定要将追加该笔保证金吗？', {
+        btn: ['确定'] //按钮
+    }, function () {
+        $.ajax({
+            type: "post",
+            dataType: "JSON",
+            url: "/tools/user_opt_ajax.ashx?act=stock_deposit_add",
+            data: { id: dataid, deposit_money: amount },
+            beforeSend: function () {
+                layer.load(0, { shade: false, time: 2000 });
+            },
+            success: function (data) {
+                layer.closeAll();
+                if (data.status == "y") {
+                    layer.alert(data.info, 9, function () {
+                        location.href = "/trans/sale.aspx";
+                    });
+                } else {
+                    layer.alert(data.info, 8);
+                }
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                layer.alert("状态：" + textStatus + "；出错提示：" + errorThrown, 8);
+            }
+        });
+    });
+}
+//设置止盈价格
+var open_price_add = function (dataid) {
+    var amount = $("#amount").val();
+    layer.confirm('您确定要继续该操作吗？', {
+        btn: ['确定'] //按钮
+    }, function () {
+        $.ajax({
+            type: "post",
+            dataType: "JSON",
+            url: "/tools/user_opt_ajax.ashx?act=stock_pricestop_add",
+            data: { id: dataid, profit_money_stop: amount },
+            beforeSend: function () {
+                layer.load(0, { shade: false, time: 2000 });
+            },
+            success: function (data) {
+                layer.closeAll();
+                if (data.status == "y") {
+                    layer.alert(data.info, 9, function () {
+                        location.href = "/trans/sale.aspx";
+                    });
+                } else {
+                    layer.alert(data.info, 8);
+                }
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                layer.alert("状态：" + textStatus + "；出错提示：" + errorThrown, 8);
+            }
+        });
+    });
+}
+//打开黑名单
+var open_black_list = function () {
+    layer.open({
+        type: 2,
+        title: '风险股名单',
+        shadeClose: true,
+        shade: 0.8,
+        area: ['620px', '420px'],
+        content: '/trans/black.aspx'
+    });
+}
+//=======================获取是否是交易时间
+var trade_time_reload = function () {
+    $.getJSON("/tools/api_ajax.ashx", { act: "is_trade_time", t: new Date() }, function (data) {
+        //交易时间内定时刷新
+        if (data.is_trade_time == 0) {
+            $("#btnbuy").removeClass("btn-disabled");
+            $("#btnbuy").attr('onclick', 'stock_buy();');
+        }
+    });
+}
+
+
+var api_domain_url = "https://quotation.ziniusoft.com/";
+//=======================K线图
+var chart_k = function () {
+    var stock_code = $("#stock_code").val();
+    if (stock_code.length != 6) {
+        stock_code = "000001";
+    }
+    var token = $("#token").val();
+    $("#tline").removeClass("curr");
+    $("#kline").addClass("curr");
+    $("#k_t_line").html("<div class='w-loading'><b class='w-loading-ico'></b></div>");
+    $("#k_t_line").html("<iframe id='chart_k' name='mainframe' frameborder='0' src='" + api_domain_url + "line/auto/k.aspx?stock_code=" + stock_code + token + "' width='100%' height='420'></iframe>");
+}
+//=======================分时图
+var chart_t = function () {
+    var stock_code = $("#stock_code").val();
+    var token = $("#token").val();
+    if (stock_code.length != 6) {
+        stock_code = "000001";
+    }
+    $("#kline").removeClass("curr");
+    $("#tline").addClass("curr");
+    $("#k_t_line").html("<div class='w-loading'><b class='w-loading-ico'></b></div>");
+    $("#k_t_line").html("<iframe id='chart_k' name='mainframe' frameborder='0' src='" + api_domain_url + "line/auto/t.aspx?stock_code=" + stock_code + token + "' width='100%' height='420'></iframe>");
+}

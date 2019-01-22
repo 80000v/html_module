@@ -1,0 +1,13 @@
+﻿#pager{width:100%;height:40px;overflow:hidden;margin-top:10px;margin-left: 35px;}
+#pager a{float:left;padding:1px 5px;margin:0 2px;border-radius:5px;background:#eee;color:#777;line-height:18px;height:18px;text-decoration:none;overflow:hidden}
+#pager a:hover{background:#f6554a;color:#fff}
+#pager span{float:left;padding:1px 5px;margin:0 2px;border-radius:5px;background:#eee;color:#777;line-height:18px;height:18px;overflow:hidden}
+#pager span.current{background-color:#f6554a;color:#fff}
+#pager span.disenable{color:#bbb;background-color:#eee}
+#pager span.text{}
+#pager .flickr{display:none;margin:0 auto}
+#pager input[type=text]{padding:0 2px;border:solid 1px #eee;width:22px;height:18px;line-height:18px;float:left;margin-right:5px;margin-bottom:5px;text-align:center}
+#pager button{float: left;border:none;padding:0 5px 0 5px;margin: 0 2px;border-radius: 5px;background: #eee;color: #777;line-height: 22px;height: 22px;overflow: hidden;background-color: #f6554a;color: #fff;}
+#list_data tr.red {color:red;}
+#list_data tr.gray {color:gray;}
+#list_data tr.blue {color:#005BAC;}

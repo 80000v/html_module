@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<!-- saved from url=(0038)https://m.58celve.com/trans/money.html -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>策略买股</title>
+    <link rel="stylesheet" href="./策略买股_files/merge.css" type="text/css">
+<link href="./策略买股_files/layer.css" type="text/css" rel="styleSheet" id="layermcss"></head>
+<style type="text/css">
+    *{
+        overflow-y: hidden;
+        overflow-x: hidden;
+    }
+    body{
+        background-color: #fff;
+        margin-top: 10px;
+
+    }
+    .page-header .header-wrap{
+        width:360px;
+        height:100px;
+        position:absolute;
+        left:0;
+        bottom:0;
+        top:0;
+        right:0;
+        margin:auto;
+    }
+    .add_con{
+        width: 98%;
+        height: 280px;
+        position: fixed;
+        bottom: 50px;
+        padding: 40px 20%;
+        display: none;
+        background-color: rgba(200, 200, 200, 0.8);
+        z-index: 1000;
+    }
+    
+    .add>label{
+        width: 43%;
+        padding: 2px;
+        display: inline-block;
+    }
+    .add>label>input{
+        margin-left: 3%;
+        border-radius: 5px;
+        height: 0.25rem;
+        /*width: 65%;*/
+        padding: 1px 3px;
+        
+    }
+    .add>div>input{
+        margin-left: 20%;
+        border-radius: 5px;
+        border: none;
+        height: 40px;
+        padding: 1px 3px;
+        background-color: #ff0000;
+        color: #fff;
+        width: 1rem;
+    }
+    .btn_1{
+        margin: 15px 10% 15px 18%;
+    }
+    .logo_img>img{
+        float: left;
+        margin-left: 18px;
+        height: 79px;
+    }
+    .btn{
+        width: 1rem;
+        margin:3px;
+        background-color: #ff0000;
+        display: block;
+        color: #fff;
+    }
+    img{
+        padding-top: 12px;
+    }
+</style>
+
+<body>
+    <div style="position: fixed;top: 150px;left:30px;">
+    <input type="button" class="btn" value="添加"  id="btn_add">
+    <input type="button"class="btn" value="删除" id="btn_remove" > 
+</div>
+<div class="add_con">
+    <div class="add" >
+        <label for="time">结算时间<input type="text" id="time" placeholder="格式如：19-01-15 11:00:02"></label>
+        <label for="dmgp">点买股票<input type="text" id="dmgp"></label>
+        <label for="rc_price">入场价格<input type="text" id="rc_price"></label>
+        <label for="cj_price">成交价格<input type="text" id="cj_price"></label>
+        <label for="qcdm_money">期初点买金额<input type="text" id="qcdm_money"></label>
+        <div>
+            <input type="button" value="提交" class=" btn_1">
+            <input type="button" value="退出" class=" btn_2">
+        </div>
+            
+    </div>
+</div>
+    <div  style="width:362px;margin: 0px auto;height: 800px;background-color: #F6f6f6;border: 1px solid #ccc;" >
+        <div class="viewport ng-scope" style="width:360px;margin: 0px auto;height: 800px;background-color: #F6f6f6;">
+            <section class="page-trade ng-scope">
+                <div class="page-trade-result">
+                    <header class="page-header" >
+                        <div class="header-wrap" >
+                            <h3 ><span>58策略</span></h3>
+                            <a href="javascript:" class="nav-left" onclick="javascript:history.go(-1);">
+                                <img id = "imgs"src="back.png" >
+                            </a>
+                            <a  class="nav-right">规则</a>
+                        </div>
+                    </header>
+                    <div class="mod-result" style="width: 360px">
+                        <div class="trade-menu">
+                            <ul>
+                                <li class="m-buy">
+                                    <a href="https://m.58celve.com/trans/buy.html">创建策略</a>
+                                </li>
+                                <li class="m-sell">
+                                    <a href="../index.html">我的策略</a>
+                                </li>
+                                <li class="m-result">
+                                    <a href="https://m.58celve.com/trans/money.html">结算策略</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="wrap mt10 ng-scope">
+                            <div id="list_data" >
+                                <a class="ng-scope" ondblclick="tr_remove(event)">
+                                    <ul>
+                                        <li>
+                                            <p class="txt-s16 ng-binding">通威股份</p>
+                                            <p><b class="ng-binding">5600</b>股</p>
+                                        </li>
+                                        <li class="txt-center" style="width: 34%">
+                                            <p class="txt-s16">成交金额</p>
+                                            <p><b class="ng-binding">52,707.20</b></p>
+                                        </li>
+                                        <li class="txt-right">
+                                            <p class="txt-s16">交易盈亏</p>
+                                            <p class="ng-scope"><b class="txt-red ng-binding">+3,177.34</b></p>
+                                        </li>
+                                    </ul>
+                                </a>
+                                <a class="ng-scope"ondblclick="tr_remove(event)"><ul><li><p class="txt-s16 ng-binding">天顺风能</p><p><b class="ng-binding">10500</b>股</p></li><li class="txt-center" style="width: 34%"><p class="txt-s16">成交金额</p><p><b class="ng-binding">48,951.00</b></p></li><li class="txt-right"><p class="txt-s16">交易盈亏</p><p class="ng-scope"><b class="txt-green ng-binding">-497.11</b></p></li></ul></a>
+                            </div>
+                            <div class="ng-scope">
+                                <div class="mod-more" id="">加载更多</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+    <script src="./策略买股_files/jquery-1.11.2.min.js.下载"></script>
+    <!-- <script src="./策略买股_files/layer.js.下载"></script> -->
+  <!--   <script src="./策略买股_files/layout.js.下载"></script>
+    <script src="./策略买股_files/page.js.下载"></script> -->
+    <script>
+        $(function () {
+            var obj={};
+             $("#btn_add").click(function(){
+                $(".add_con").css("display","block");
+             });
+             $(".btn_2").click(function(){
+                $(".add_con").css("display","none");
+             });
+             $(".btn_1").click(function(event) {
+                var time = $("#time").val();
+                var dmgp = $("#dmgp").val();
+                // 1. 入场价格
+                var rc_price = Number($("#rc_price").val());
+                // 2. 成交价格
+                var cj_price = Number($("#cj_price").val()).toFixed(3);
+                // 3. 期初点买金额
+                var qcdm_money = Number($("#qcdm_money").val());
+                // 成交数量 =（ 期初点买金额 / 入场价格 ）. 取整百
+                var num = Number(Math.floor((Number(qcdm_money) /Number(rc_price) )/100)*100);
+                // 成交金额 = （成交数量 * 成交价格 ）四舍五入保留整数
+                var cj_money = Number(Math.round(cj_price*num));
+                // 交易盈亏 =「【（成交数量 *（成交价格- 入场价格））- Max（成交数量 * 入场价格 * 万5，5）- Max（成交数量 * 成交价格 * 万5，5）- 成交数量 * 成交价格 * 千1】* 0.91 」.取两位小数
+                var jyyks = (num*(cj_price-rc_price)-Math.max(num*rc_price*0.0005,5)-Math.max(num*cj_price*0.0005,5)-(num*cj_price*0.001));
+                var jyyk = 0;
+                if (jyyks > 0){
+                    jyyk = (Number(jyyks * 0.91)).toFixed(2)
+                }else{
+                    jyyk = (jyyks).toFixed(2);
+                }
+                jyyk>0?(Number(jyyks * 0.91)).toFixed(2):jyyk = (jyyks).toFixed(2);
+                if(rc_price==""||time==""||dmgp==""||qcdm_money==""||cj_price==""||isNaN(qcdm_money)){
+                    return;
+                }   
+                var col = "";
+                if(jyyk > 0){
+                   col="#FB0007";
+                   jyyk = "+"+jyyk;
+                  
+                }else if(jyyk < 0){
+                    
+                   col = "green" ;
+                   // jyyk = "-"+jyyk;
+                   
+                }else{
+                    col = "#333"  ;
+                }
+                // var str = '<tr ondblclick="tr_remove(event)">'+
+                //             '<td class="pl10">'+time+'</td>'+
+                //             '<td>'+dmgp+'</td><td class="txt-r">'+cj_price+'</td>'+
+                //             '<td class="txt-r">'+num+'</td><td class="txt-r">'+cj_money+'</td>'+
+                //             '<td class="txt-r"><span class="txt-up jyyk" style="color:'+col+'">'+jyyk+'</span></td>'+
+                //             '<td class="txt-c"><a href="javascript:">查看详情</a></td>'+
+                //         '</tr>';
+                var str = '<a class="ng-scope" ondblclick="tr_remove(event)">'+
+                                    '<ul>'+
+                                        '<li>'+
+                                            '<p class="txt-s16 ng-binding">'+dmgp+'</p>'+
+                                            '<p><b class="ng-binding">'+num+'</b>股</p>'+
+                                        '</li>'+
+                                       ' <li class="txt-center" style="width: 34%">'+
+                                           ' <p class="txt-s16">成交金额</p>'+
+                                           ' <p><b class="ng-binding">'+cj_money+'</b></p>'+
+                                       ' </li>'+
+                                      '  <li class="txt-right">'+
+                                            '<p class="txt-s16">交易盈亏</p>'+
+                                           ' <p class="ng-scope"><b class=" ng-binding" style="color:'+col+'">'+jyyk+'</b></p>'+
+                                        '</li>'+
+                                    '</ul>'+
+                                '</a>';
+                $("#list_data").prepend(str);
+                $("body").css("height",$("body").height()+170)
+            });
+             
+        }) 
+        var tr_remove = null;
+        document.getElementById('btn_remove').onclick=function() {
+             tr_remove = r_remove;
+        }
+        var r_remove = function (event) {
+                 document.getElementById('list_data').removeChild(event.path[3]);
+                 
+                 tr_remove = null;
+                 b=document.getElementsByTagName("body")[0];
+                 if(b.offsetHeight>600){
+                     b.style.height = b.offsetHeight - 170 +"px";
+                 }
+                
+             }
+    </script>
+
+
+</body></html>

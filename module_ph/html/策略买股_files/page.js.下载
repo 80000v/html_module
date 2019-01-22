@@ -1,0 +1,73 @@
+﻿var PagingData = {
+    /*起始页*/
+    pageindex: 2,
+    /*路径*/
+    url: "/tools/opt_ajax.ashx",
+    /*绑定列表控件名称*/
+    controlname: "",
+    /*加载框ID*/
+    loadid: "",
+    /*传递参数*/
+    param: { t: +new Date() },
+    /*初始化*/
+    init: function (pageindex, url, param, controls, ifload, btnid) {
+        this.pageindex = pageindex;
+        this.url = url;
+        this.param = $.extend({}, this.param, param);
+        this.controlname = controls;
+        this.ifload = ifload == 1 ? true : false;
+        this.loadid = btnid;
+        /* this.pagingevent(); */
+    },
+    /*是否加载页面*/
+    ifload: true,
+    /*分页事件*/
+    pagingevent: function () {
+        /*要绑定的控件*/
+        var list = $("#" + PagingData.controlname);
+        if (PagingData.ifload) {
+            /*是否加载列表*/
+            PagingData.ifload = false;
+            /*添加滚动条*/
+            $("#" + PagingData.loadid).html("加载中，请稍后···");
+            /*加载数据*/
+            $.get(PagingData.url, ($.extend({}, PagingData.param, { p: PagingData.pageindex })),
+                function (data) {
+                    switch (data.status) {
+                        case 1:
+                            {
+                                if (PagingData.pageindex < data.pages) {
+                                    /*当前页*/
+                                    PagingData.pageindex++;
+                                    /*是否加载列表*/
+                                    PagingData.ifload = true;
+                                }
+                                else {
+                                    setTimeout(function () { $("#" + PagingData.loadid).remove(); }, 1000);
+                                }
+                                /*绑定数据*/
+                                list.append(data.msg);
+                            } break;
+                    }
+                    $("#" + PagingData.loadid).html("加载更多");
+                }, "json");
+        }
+        else {
+            var count = 0;
+            $.each($("#" + PagingData.controlname + " div"), function (n, item) {
+                var id = $(item).attr("id");
+                if (id = PagingData.loadid) { count++; }
+            });
+            if (count == 0) {
+                $("#" + PagingData.loadid).html("加载完毕");
+                setTimeout(function () { $("#" + PagingData.loadid).remove(); }, 3000);
+            }
+            return;
+        }
+    }
+};
+$(function () {
+    $("#dataload").click(function () {
+        PagingData.pagingevent();
+    });
+});

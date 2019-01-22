@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<!-- saved from url=(0039)https://www.58celve.com/trans/sale.aspx -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta http-equiv="Cache-Control" content="no-store">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="-1">
+
+    
+    <link href="./我的策略_files/main.css" rel="stylesheet" type="text/css">
+    
+    <title>我的策略</title>
+    <link href="./我的策略_files/trade.css" rel="stylesheet" type="text/css">
+    <link href="./我的策略_files/page.css" rel="stylesheet">
+    <link href="./我的策略_files/website.css" rel="stylesheet">
+    <link href="./我的策略_files/membercenter.css" rel="stylesheet" type="text/css">
+    <link href="./我的策略_files/button.css" rel="stylesheet">
+
+    <script>
+
+    </script>
+<link rel="stylesheet" href="./我的策略_files/layer.css" id="layui_layer_skinlayercss" style=""></head>
+<style>
+    .add_con{
+        /* position: relative; */
+        width: 60%;
+        height: 210px;
+        position: fixed;
+        top: 20px;
+        padding: 40px 20%;
+        display: none;
+        background-color: rgba(200, 200, 200, 0.8);
+    }
+    
+    .add>label{
+        width: 43%;
+        padding: 2px;
+    }
+    .add>label>input{
+        margin-left: 3%;
+        border-radius: 5px;
+        width: 65%;
+        padding: 1px 3px;
+    }
+    .btn_1{
+        margin: 15px 10% 15px 18%;
+    }
+    
+    #radio{
+        padding: 0px;
+        margin:0px;
+    }
+    #radio>input{
+        margin:0px 3px 0px 10px;
+        width:20px;background-color: #fff;
+        color:#fff;
+    }
+    .rass>label>input{
+    width: 4.7rem;
+    padding: 3px;
+    border-radius: 1px solid #333; 
+    }
+    .rass>label{
+        display: block;
+        width: 5rem;
+    }
+    .logo_img>img{
+        float: left;
+        margin-left: 18px;
+        height: 79px;
+    }
+</style>
+<body>
+    <div class="header">
+        <div class="header-main clearfix"> 
+            <div class="logo_img"><img src="html/logo_58.png"></div>
+            <div class="nav">
+                <ul>
+                    <li><a class="link" id="nav-home">首页</a></li>
+                    <li><a class="link curr" id="nav-trade">策略买股</a></li>
+                    <li><a class="link" id="nav-free">免费体验</a></li>
+                    <li><a  class="link" id="nav-about">关于我们</a></li>
+                    <li>
+                        
+                        <div class="dropdown">
+                            <a href="https://www.58celve.com/user/index.aspx" class="button">个人中心</a>
+                            <dl>
+                                <dd><a  class="icons-recharge">充值</a></dd>
+                                <dd><a  class="icons-cash">提现</a></dd>
+                                <dd><a  class="icons-money">资金明细</a></dd>
+                                <dd><a href="javascript:void(0);" onclick="LoginOutAjax();" class="icons-logout">安全退出</a></dd>
+                            </dl>
+                        </div>
+                        
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script src="我的策略_files/jquery-1.11.2.min.js.下载"></script>
+  
+    
+    <div class="main-wrap trade-page">
+        <div class= "rass"style="position: fixed;top: 100px;left: 10px;">
+           <input type="button"class="btn" value="添加"  id="btn_add"  style="display: block;margin:3px;width: 5rem">
+        <input type="button"class="btn" value="删除" id="btn_remove" style="display: block;margin:3px;width: 5rem"> 
+        <label for="zhyes"><input type="text" id="zhyes" placeholder="账户余额"></label>
+           
+        <p style="width: 5.3rem;padding: 10px;color: #ff0000">注：1.红框内为截图操作区域；&nbsp2.删除只能一个一个操作，先点删除在双击要删除的信息；3.委托卖出按钮可以点击按钮选择按钮样式</p>
+        </div>
+        
+        <div class="trade-wrap clearfix ">
+            <div class="trade-operation">
+                <div class="tab-wrap act-t-buy">
+                    <ul class="tab-title">
+                        <li class="t-buy" ><i>01</i>创建策略</li>
+                        <li class="t-sell curr"><i>02</i>我的策略</li>
+                        <li class="t-balance" ><a href="html/index2.html" style="display: block;text-decoration:none;color: #333"><i>03</i>结算策略</a></li>
+                        
+                        <li class="t-cancel hide"><i>04</i>委托撤单</li>
+                    </ul>
+                    <div class="tab-cons">
+                        <!--点卖-->
+                        <div class="t-sell" id="con_trade_2">
+                            <div class="pl10 pb5 money_delay" style="display: block;"><span class="pr20">今日递延费总额：<span id="dy">300</span> 元</span>账户余额：<span id="zhye">6955.73</span>元</div>
+                            <table class="list-wrap " style="font-size: 14px">
+                                <tbody><tr>
+                                    <th style="width: 135px" class="pl10">合约</th>
+                                    <th>合约摘要</th>
+                                    <th style="width: 75px">成交价格</th>
+                                    <th style="width: 75px">当前价格</th>
+                                    <th style="width: 75px">盈亏比例</th>
+                                    <th style="width: 75px">浮动盈亏</th>
+                                    <th style="width: 75px">预警线</th>
+                                    <th style="width: 75px">递延条件</th>
+                                    <th style="width: 120px">操作</th>
+                                </tr>
+                                </tbody><tbody id="list_data">
+                                    
+                                    <tr ondblclick="tr_remove(event)">
+                                        <td class="pl10 font13">19-01-14 10:52:10<br><span>投资人ID：</span> <span class="txt-up">100001</span></td>
+                                        <td class="font13">永兴特钢（002756） <span class="txt-up">7600</span>股，<span d="100000">100,000.00</span>元<br>止损： <span class="txt-down">-8,750.00</span> 元，保证金：12,500.00元，已追加保证金：0.00 元</td>
+                                        <td><span class="currprice">12.99</span></td>
+                                        <td><span class="currprice">12.72</span></td>
+                                        <td><span class="currprice txt-down">-2.10%</span></td>
+                                        <td><span class="currprice txt-down">-2,078.55</span></td>
+                                        <td><span class="currprice">-6,250.00</span></td>
+                                        <td><span class="currprice">-6,250.00</span></td>
+                                        <td>
+                                            <button class="btn ch" onclick="changes(event)">委托卖出</button>
+                                            <button class="btn" style="margin-top:5px;" ms-attr-title="追加保证金" onclick="open_deposite(5441,-8750.0000);">追加</button>
+                                            <button class="btn" style="margin-top:5px;" ms-attr-title="止盈调整" onclick="open_pricestop(5441,-8750.0000);">止盈调整</button></td>
+                                        </tr>
+                                       </tbody>
+                            </table>
+                        </div>
+                        <!--点卖结束-->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <input id="data_name" type="hidden">
+    <input id="data_code" type="hidden">
+    <input id="data_id" type="hidden">
+    <input id="type_id" name="type_id" type="hidden" value="1">
+
+    
+    <!--footer-->
+    <div class="footer">
+        <div class="footer-main clearfix">
+            <div class="footer-left">
+                <div class="footer-nav">
+                    <a >关于我们</a>
+                    <a >帮助中心</a>
+                    <a>新手指引</a>
+                    <a >新闻资讯</a>
+                </div>
+                <div class="footer-info">
+                    <ul>
+                        <li>全国服务热线： <strong>400-878-8558</strong></li>
+                        <li>周一到周五：  09:00-17:30</li>
+                        
+                       
+                        <li>邮箱： suggest@58celve.com</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-right">
+                <div class="footer-code clearfix">
+                    <ul>
+                        <li>
+                            <div class="img">
+                                <img src="./我的策略_files/wechat_service_code.jpg">
+                            </div>
+                            <p>微信服务号</p>
+                        </li>
+                        <li>
+                            <div class="img">
+                                <img src="./我的策略_files/wechat_order_code.jpg">
+                            </div>
+                            <p>微信订阅号</p>
+                        </li>
+                        <li>
+                            <div class="img">
+                                <img src="./我的策略_files/app_code.png">
+                            </div>
+                            <p>APP下载</p>
+                        </li>
+                        <li>
+                            <div class="img">
+                                <img src="./我的策略_files/wechat_service1.jpg">
+                            </div>
+                            <p>微信客服1</p>
+                        </li>
+                        <li>
+                            <div class="img">
+                                <img src="./我的策略_files/wechat_service2.jpg">
+                            </div>
+                            <p>微信客服2</p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="footer-warn">
+                    <p><strong>风险提示 :</strong>保护投资者利益是中国证监会工作的重中之重。</p>
+                    <p>我们提醒您： 股市有风险，投资需谨慎！市场风险莫测，务请谨慎行事</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="sidebar" id="sidebar">
+        <ul>
+            <li>
+                <div class="icons">
+                    <img src="./我的策略_files/icon_qq.png">
+                    <p>在线QQ</p>
+                </div>
+                
+            </li>
+            <li>
+                <div class="icons">
+                    <img src="./我的策略_files/icon_service.png">
+                    <p>客服电话</p>
+                </div>
+                <div class="content phone" style="display: none;">
+                    400-878-8558
+                </div>
+            </li>
+            <li>
+                <div class="icons">
+                    <img src="./我的策略_files/icon_wechat.png">
+                    <p>公众号</p>
+                </div>
+                <div class="content code">
+                    <img src="./我的策略_files/wechat_service_code.jpg">
+                    <p>微信服务号</p>
+                    <img src="./我的策略_files/wechat_order_code.jpg">
+                    <p>微信订阅号</p>
+                </div>
+            </li>
+            <li>
+                <div class="icons">
+                    <img src="./我的策略_files/icon_phone.png">
+                    <p>APP下载</p>
+                </div>
+                <div class="content code code-app">
+                    <img src="./我的策略_files/app_code.png">
+                    <p>APP二维码</p>
+                </div>
+            </li>
+            <li onclick="goTop()">
+                <div class="icons">
+                    <img src="./我的策略_files/icon_up.png">
+                    <p>返回顶部</p>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div class="add_con">
+        <div class="add" >
+            <label for="time">合约时间<input type="text" id="time" placeholder="格式如：19-01-15 11:00:02"></label>
+            <label for="id">投资人ID<input type="text" id="id" ></label>
+            <label for="gp_name">股票名称<input type="text" id="gp_name"></label>
+            <label for="gp_id">股票代码<input type="text" id="gp_id"></label>
+            <label for="money">点买金额<input type="text" id="money"></label>
+            <label for="mul" id="radio">杠杆倍数<input type="radio" name="mul" value="2">2倍<input type="radio" name="mul"value="5">5倍<input type="radio" name="mul"value="8">8倍</label>
+            <label for="add_money">加保证金<input type="text" id="add_money"></label>
+            <label for="cj_price">成交价格<input type="text" id="cj_price"></label>
+            <label for="price">当前价格<input type="text" id="price"></label>
+            <div>
+                <input type="button" value="提交" class="btn btn_1">
+            <input type="button" value="退出" class="btn btn_2">
+            </div>
+            
+     </div>
+    </div>
+    <script type="text/javascript">
+        $(function () {
+              $("#id").val(Math.floor(Math.random()*11) +10000) 
+            var obj={};
+             $("#btn_add").click(function(){
+                $(".add_con").css("display","block");
+             });
+             $(".btn_2").click(function(){
+                $(".add_con").css("display","none");
+             });
+            $("#id").blur(function() {
+               
+               obj.time = $("#time").val();
+            });
+            $("#time").blur(function() {
+               
+               obj.time = $("#time").val();
+            });
+            $("#gp_name").blur(function() {
+               
+               obj.gp_name = $("#gp_name").val();
+               
+            });
+            $("#money").blur(function() {
+               
+               obj.time = $("#money").val();
+            });
+            $("input[name='mul']").click(function() {
+               
+               obj.time = Number($("input[name='mul']:checked").val()); 
+               // console.log(obj.time)
+            });
+            $("#add_money").blur(function() {
+               
+               obj.time = $("#add_money").val();
+            });
+            $("#cj_price").blur(function() {
+               
+               obj.time = $("#cj_price").val();
+            });
+            $("#price").blur(function() {
+               
+               obj.price = $("#price").val();
+            });
+            $("#gp_id").blur(function() {
+               
+               obj.gp_id = $("#gp_id").val();
+               while(1){
+                   obj.gp_id = Math.floor(obj.gp_id/10) ;
+                   if(obj.gp_id < 10){
+                        break;
+                   }
+               }
+               if(obj.gp_id == 3){
+                    $("input[value='8']").attr("disabled","disabled")
+                }
+                else{
+                   $("input[value='8']").removeAttr("disabled") 
+                }
+            });
+                 
+           $("#zhye").text(Number(Math.random()*50001+100000).toFixed(2));
+            $("#zhyes").blur(function() {
+                $("#zhye").text(Number($("#zhyes").val()).toFixed(2)) ;
+               
+            });
+
+            $(".btn_1").click(function(event) {
+                
+                var id = $("#id").val();
+                var time = $("#time").val();
+                var gp_name = $("#gp_name").val();
+
+                var money = Number($("#money").val()).toFixed(2);
+                var add_money = Number($("#add_money").val()).toFixed(2);
+                var cj_price = Number($("#cj_price").val()).toFixed(2);
+                var price = Number($("#price").val()).toFixed(2);
+                var mul = Number($("input[name='mul']:checked").val());
+                var gp_id = $("#gp_id").val(); 
+                // 股数 = （点买金额 / 成交价格）
+                var gp_num= Number(Math.floor(money/cj_price/100)*100);
+                // 保证金 = 点买金额 / 杠杆倍数
+                var bz_money = Number(money/mul).toFixed(2);
+                // 浮动盈亏 =  （ 当前价格 - 成交价格 ）*股数  -  MAX（股数*成交价格*万5，5）
+                var fdyk = Number((price - cj_price) * gp_num- Math.max(gp_num*cj_price*0.0005 ,5)).toFixed(2);
+                // 预警线 = 保证金*0.5 + 已追加保证金
+                var yj_line = Number(bz_money * 0.5 + Number(add_money)).toFixed(2);
+                
+                // 盈亏比例 = 浮动盈亏 / 【 股数*成交价格 + MAX（股数*成交价格*万5，5）】
+                var ykbl = (Number((fdyk/(gp_num*cj_price+Math.max(gp_num*cj_price*0.0005,5)))*100).toFixed(2));
+                //止损
+                var zs = Number(-Number(bz_money* 0.7)-Number(add_money)).toFixed(2);
+                if(id==""||time==""||money==""||cj_price==""||price==""||mul==""||add_money==""||gp_name==""||gp_id==""){
+                    return;
+                }
+                var col = ""; 
+                if(ykbl >= 0){
+                   col="#FB0007";
+                }else if(ykbl < 0){
+                   col = "green" ;
+                }
+                var col2 = "";
+                if(fdyk > 0){
+                   col2="#FB0007";
+                }else if(fdyk < 0){
+                   col2 = "green" ;
+                }else{
+                    col2 = "#333"  ;
+                }
+                var str = '<tr ondblclick="tr_remove(event)">'+
+                    '<td class="pl10 font13">'+time+'<br><span>投资人ID：</span> <span class="txt-up">'+id+'</span></td>'+
+                    '<td class="font13">'+gp_name+'（'+gp_id+'） <span class="txt-up">'+gp_num+'</span>股，<span d="'+Math.floor(money)+'">'+nums(money)+'</span>元<br>止损：'+
+                    '<span class="txt-down">'+nums(zs)+'</span> 元，保证金：'+nums(bz_money)+'元，已追加保证金：'+nums(add_money)+' 元</td>'+
+                    '<td><span class="currprice">'+nums(cj_price)+'</span></td><td><span class="currprice">'+nums(price)+'</span></td>'+
+                    '<td><span class="currprice txt-up" style="color:'+col+'">'+ykbl+'%</span></td>'+
+                    '<td><span class="currprice txt-up" style="color:'+col2+'">'+nums(fdyk)+'</span></td>'+
+                    '<td><span class="currprice">-'+nums(yj_line)+'</span></td>'+
+                   ' <td><span class="currprice">-'+nums(yj_line)+'</span></td>'+
+                    '<td>'+
+                       '<button class="btn ch" onclick="changes(event);" style="background-color:#dbdbdb">委托卖出</button>'+
+                       ' <button class="btn" style="margin-top:5px;" ms-attr-title="追加保证金" >追加</button>'+
+                        '<button class="btn" style="margin-top:5px;" ms-attr-title="止盈调整">止盈调整</button>'+
+                    '</td>'+
+                '</tr>';
+                    $("#list_data").prepend(str);
+                 
+                    var count = 0;
+                    for (var i = 0; i < $("span[d]").length; i++) {
+                        console.log()
+                        count += Number($("span[d]").eq(i).attr("d"));
+                    }
+                    var dy = Math.floor((count /10000) * 30);
+                    $("#dy").text(dy); 
+            });
+           function nums(data){
+                if(data!=null){
+                  return data.replace(/\d{1,3}(?=(\d{3})+(\.\d*)?$)/g,'$&,');
+                }else{
+                  return ;
+                }
+          }
+          
+        });
+    var s = 0;
+    function changes(event) {
+        // var ch  = document.getElementsByClassName('ch')[0];
+        // console.log(event.path[0]);
+        // console.log(this);
+        if (s == 0) {
+            event.path[0].style.background =  "#E12D2D";
+            s = 1;
+            return;
+        }else if(s==1){
+            event.path[0].style.background =  "#DBDBDB";
+            s = 0;
+            return;
+        }
+    }
+    var tr_remove = null;
+    document.getElementById('btn_remove').onclick=function() {
+         tr_remove = r_remove;
+    }
+    var r_remove = function (event) {
+             document.getElementById('list_data').removeChild(event.toElement.parentElement);
+             a = document.getElementsByTagName('span[d]');
+             tr_remove = null;
+             var count = 0;
+             for (var i = 0; i < a.length; i++) {
+                    count += Number(a[i].getAttribute("d"));
+
+                }
+                var dy = Math.floor((count /10000) * 30);
+
+                document.getElementById("dy").innerHTML = dy; 
+    }
+    </script>
+
+<!-- 录入项目：
+// 合约时间
+// 投资人ID
+// 股票名称
+// 股票代码
+// 点买金额
+// 杠杆倍数
+// 已追加保证金
+// 成交价格
+// 当前价格
+
+// 计算项目：
+// 股数 = （点买金额 / 成交价格） 舍余取整百，<100元时报错Error。
+// 保证金 = 点买金额 / 杠杆倍数
+// 浮动盈亏 =  （ 当前价格 - 成交价格 ）*股数  -  MAX（股数*成交价格*万5，5）
+// 预警线 = 保证金*0.5 + 已追加保证金
+// 预警线 = 保证金*0.5 + 已追加保证金
+// 盈亏比例 = 浮动盈亏 / 【 股数*成交价格 +   MAX（股数*成交价格*万5，5）】
+
+// 注意： 委托卖出按钮可以设置两种颜色 -->
+   
+</body></html>

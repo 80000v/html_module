@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<!-- saved from url=(0037)https://m.58celve.com/trans/sale.html -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>策略买股</title>
+    <link rel="stylesheet" href="./策略买股_files/merge.css" type="text/css">
+<link href="./策略买股_files/layer.css" type="text/css" rel="styleSheet" id="layermcss"></head>
+<style type="text/css">
+
+    body{
+        overflow-y: hidden;
+        overflow-x: hidden;
+        margin-top: 10px;
+        height: 600px;
+        background-color: #fff;
+    }
+    .page-header .header-wrap{
+            width:360px;
+            height:100px;
+            position:absolute;
+            left:0;
+            bottom:0;
+            top:0;
+            right:0;
+            margin:auto;
+    }
+    .add_con{
+        /* position: relative; */
+        width: 98%;
+        height: 250px;
+        position: fixed;
+        bottom: 20px;
+        padding: 40px 20%;
+        display: none;
+        background-color: rgba(200, 200, 200, 0.8);
+        z-index: 1000;
+    }
+    
+    .add>label{
+        width: 43%;
+        padding: 2px;
+        display: inline-block;
+    }
+    .add>label>input{
+        margin-left: 3%;
+        border-radius: 5px;
+        width: 65%;
+        padding: 1px 3px;
+    }
+    .btn_1{
+        margin: 15px 10% 15px 18%;
+    }
+    .add>div>input{
+        width: 1rem;
+        margin:3px;
+        border: none;
+        border-radius: 3px;
+        height: 0.4rem;
+        background-color: #ff0000;
+        margin-left: 1.5rem; 
+        color: #fcfcfc;
+    }
+    #radio{
+        padding: 0px;
+        margin:0px;
+    }
+    #radio>input{
+        margin:0px 3px 0px 10px;
+        width:20px;background-color: #fff;
+        color:#fff;
+    }
+    .rass>label>input{
+    width: 1.04rem;
+
+    padding: 3px;
+    border-radius: 2px; 
+    border: 1px solid #333;
+    }
+
+    .rass>label{
+        display: block;
+        width: 1rem;
+    }
+    .logo_img>img{
+        float: left;
+        margin-left: 18px;
+        height: 79px;
+    }
+    .btn{
+        width: 1rem;margin:3px;
+        background-color: #ff0000;display: block;
+        color: #fcfcfc;
+    }
+    #list_data{
+        /*height:500px;*/
+    }
+    img{
+        padding-top: 12px;
+    }
+</style>
+<body>
+<div class= "rass"style="position: fixed;top: 100px;left: 10px;">
+    <input type="button"class="btn" value="添加"  id="btn_add" >
+    <input type="button"class="btn" value="删除" id="btn_remove" > 
+    <label for="zhyes"><input type="text" id="zhyes" placeholder="账户余额"></label>
+       
+    <p style="width: 2rem;padding: 10px;color: #ff0000">注：1.红框内为截图操作区域；&nbsp2.删除只能一个一个操作，先点删除在双击要删除的信息；3.委托卖出按钮可以点击按钮选择按钮样式</p>
+</div>
+<div class="add_con">
+    <div class="add" >
+        <label for="time">合约时间<input type="text" id="time" placeholder="格式如：19-01-15 11:00:02"></label>
+        <label for="id">投资人ID<input type="text" id="id" ></label>
+        <label for="gp_name">股票名称<input type="text" id="gp_name"></label>
+        <label for="gp_id">股票代码<input type="text" id="gp_id"></label>
+        <label for="money">点买金额<input type="text" id="money"></label>
+        <label for="mul" id="radio">杠杆倍数<input type="radio" name="mul" value="2">2倍<input type="radio" name="mul"value="5">5倍<input type="radio" name="mul"value="8">8倍</label>
+        <label for="add_money">加保证金<input type="text" id="add_money"></label>
+        <label for="cj_price">成交价格<input type="text" id="cj_price"></label>
+        <label for="price">当前价格<input type="text" id="price"></label>
+        <div>
+            <input type="button" value="提交" class=" btn_1">
+            <input type="button" value="退出" class=" btn_2">
+        </div>
+        
+    </div>
+ </div>
+
+    <div  style="width:362px;margin: 0px auto;height: 800px;background-color: #f6f6f6;border: 1px solid #ccc;" >
+        <div class="viewport ng-scope" style="width:360px;margin: 0px auto;height: 800px;background-color: #F6f6f6;">
+            <section class="page-trade ng-scope">
+                <div class="page-trade-sell">
+                    <header class="page-header">
+                        <div class="header-wrap">
+                            <h3><span>58策略</span></h3>
+                            <a href="javascript:" class="nav-left" onclick="url_back();">
+                                <img src="html/back.png">
+                            </a>
+                            <a class="nav-right">规则</a>
+                        </div>
+                    </header>
+                    <div class="mod-clearing" style="width: 360px;">
+                        <div class="trade-menu">
+                            <ul>
+                                <li class="m-buy">
+                                    <a>创建策略</a>
+                                </li>
+                                <li class="m-sell">
+                                    <a>我的策略</a>
+                                </li>
+                                <li class="m-result">
+                                    <a href="html/index2.html">结算策略</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="money_delay" style="display: block;">今日递延费总额<span id="dy">285.00</span>元，账户余额<span id="zhye">19149.69</span>元</div>
+                        <div class="mod-clearing" id="list_data" >
+                            
+                            <div class="wrap mt15 txt-gray pb15 ng-scope" ondblclick="tr_remove(event)" d='10000'>
+                                <div class="row-2">
+                                    <ul class="clearfix">
+                                        <li class="fl">
+                                            <p class="title txt-red ng-binding">永兴特钢（002756）</p>
+                                            <p class="ng-binding ng-scope">委托买入 &nbsp;&nbsp;12.99</p>
+                                            <p class="ng-binding ng-scope">现价 &nbsp;&nbsp;12.78</p>
+                                            <p class="ng-binding">交易日期 &nbsp;&nbsp;19-01-14 10:52</p>
+                                            <p class="ng-binding ng-scope">保证金 &nbsp;&nbsp;12,500.00</p>
+                                            <p class="ng-binding">递延条件&nbsp;-6,250.00</p>
+                                        </li>
+                                        <li class="fl">
+                                                <p class="title txt-green ng-scope"><span class="ng-binding">-1622.550</span>&nbsp;&nbsp;<span class="ng-binding">-1.64%</span></p>
+                                                <p class="ng-binding">止损 &nbsp;-8,750.00</p>
+                                                <p class="ng-binding">数量 &nbsp;7600</p>
+                                                <p class="ng-binding">预警线&nbsp;-6,250.00</p>
+                                                <p class="ng-binding ng-scope" style="width:107%;">追加 &nbsp;0.00</p>
+                                        </li>
+                                        <li class="fr">
+                                            <div class="state-red ng-binding ng-scope " style="width:107%;" onclick="changes(event);">委托卖出</div>
+                                            <div  class="state-red mt5 ng-scope" style="width:107%;">追加</div>
+                                            <div  class="state-red mt5 ng-scope" style="width:107%;">止盈调整</div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ng-scope hide">
+                            <div class="mod-more" id="dataload">
+                                加载更多
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <input type="hidden" id="currentPageIndex" value="1">
+        </div>
+    </div>
+    <script src="./策略买股_files/jquery-1.11.2.min.js.下载"></script>
+    <!-- <script src="./策略买股_files/layer.js.下载"></script> -->
+   <!--  <script src="./策略买股_files/layout.js.下载"></script>
+    <script src="./策略买股_files/list.js.下载"></script>
+    <script src="./策略买股_files/trade.js.下载"></script> -->
+ <script type="text/javascript">
+        $(function () {
+              $("#id").val(Math.floor(Math.random()*11) +10000) 
+            var obj={};
+             $("#btn_add").click(function(){
+                $(".add_con").css("display","block");
+             });
+             $(".btn_2").click(function(){
+                $(".add_con").css("display","none");
+             });
+            $("#id").blur(function() {
+               
+               obj.time = $("#time").val();
+            });
+            $("#time").blur(function() {
+               
+               obj.time = $("#time").val();
+            });
+            $("#gp_name").blur(function() {
+               
+               obj.gp_name = $("#gp_name").val();
+               
+            });
+            $("#money").blur(function() {
+               
+               obj.time = $("#money").val();
+            });
+            $("input[name='mul']").click(function() {
+               
+               obj.time = Number($("input[name='mul']:checked").val()); 
+               // console.log(obj.time)
+            });
+            $("#add_money").blur(function() {
+               
+               obj.time = $("#add_money").val();
+            });
+            $("#cj_price").blur(function() {
+               
+               obj.time = $("#cj_price").val();
+            });
+            $("#price").blur(function() {
+               
+               obj.price = $("#price").val();
+            });
+            $("#gp_id").blur(function() {
+               
+               obj.gp_id = $("#gp_id").val();
+               while(1){
+                   obj.gp_id = Math.floor(obj.gp_id/10) ;
+                   if(obj.gp_id < 10){
+                        break;
+                   }
+               }
+               if(obj.gp_id == 3){
+                    $("input[value='8']").attr("disabled","disabled")
+                }
+                else{
+                   $("input[value='8']").removeAttr("disabled") 
+                }
+            });
+                 
+           $("#zhye").text(Number(Math.random()*50001+100000).toFixed(2));
+            $("#zhyes").blur(function() {
+                $("#zhye").text(Number($("#zhyes").val()).toFixed(2)) ;
+               
+            });
+
+            $(".btn_1").click(function(event) {
+                
+                var id = $("#id").val();
+                var time = $("#time").val();
+                var gp_name = $("#gp_name").val();
+
+                var money = Number($("#money").val()).toFixed(2);
+                var add_money = Number($("#add_money").val()).toFixed(2);
+                var cj_price = Number($("#cj_price").val()).toFixed(2);
+                var price = Number($("#price").val()).toFixed(2);
+                var mul = Number($("input[name='mul']:checked").val());
+                var gp_id = $("#gp_id").val(); 
+                // 股数 = （点买金额 / 成交价格）
+                var gp_num= Number(Math.floor(money/cj_price/100)*100);
+                // 保证金 = 点买金额 / 杠杆倍数
+                var bz_money = Number(money/mul).toFixed(2);
+                // 浮动盈亏 =  （ 当前价格 - 成交价格 ）*股数  -  MAX（股数*成交价格*万5，5）
+                var fdyk = Number((price - cj_price) * gp_num- Math.max(gp_num*cj_price*0.0005 ,5)).toFixed(2);
+                // 预警线 = 保证金*0.5 + 已追加保证金
+                var yj_line = Number(bz_money * 0.5 + Number(add_money)).toFixed(2);
+                
+                // 盈亏比例 = 浮动盈亏 / 【 股数*成交价格 + MAX（股数*成交价格*万5，5）】
+                var ykbl = (Number((fdyk/(gp_num*cj_price+Math.max(gp_num*cj_price*0.0005,5)))*100).toFixed(2));
+                //止损
+                var zs = Number(-Number(bz_money* 0.7)-Number(add_money)).toFixed(2);
+                if(id==""||time==""||money==""||cj_price==""||price==""||mul==""||add_money==""||gp_name==""||gp_id==""){
+                    return;
+                }
+                var col = ""; 
+                if(ykbl >= 0){
+                   col="#FB0007";
+                }else if(ykbl < 0){
+                   col = "green" ;
+                }
+                var col2 = "";
+                if(fdyk > 0){
+                   col2="#FB0007";
+                }else if(fdyk < 0){
+                   col2 = "green" ;
+                }else{
+                    col2 = "#333"  ;
+                }
+                
+                var str = '<div class="wrap mt15 txt-gray pb15 ng-scope" ondblclick="tr_remove(event)" d='+money+'>'+
+                                '<div class="row-2">'+
+                                    '<ul class="clearfix">'+
+                                        '<li class="fl">'+
+                                            '<p class="title txt-red ng-binding">'+gp_name+'（'+gp_id+'）</p>'+
+                                            '<p class="ng-binding ng-scope">委托买入 &nbsp;&nbsp;'+cj_price+'</p>'+
+                                            '<p class="ng-binding ng-scope">现价 &nbsp;&nbsp;'+price+'</p>'+
+                                            '<p class="ng-binding">交易日期 &nbsp;&nbsp;'+time+'</p>'+
+                                            '<p class="ng-binding ng-scope">保证金 &nbsp;&nbsp;'+nums(bz_money)+'</p>'+
+                                            '<p class="ng-binding">递延条件&nbsp;'+yj_line+'</p>'+
+                                        '</li>'+
+                                        '<li class="fl">'+
+                                           ' <p class="title txt-green ng-scope"><span class="ng-binding">'+fdyk+'</span>&nbsp;&nbsp;<span class="ng-binding">'+ykbl*100+'%</span></p>'+
+                                            '<p class="ng-binding">止损 &nbsp;'+nums(zs)+'</p>'+
+                                           ' <p class="ng-binding">数量 &nbsp;'+gp_num+'</p>'+
+                                            '<p class="ng-binding">预警线&nbsp;'+nums(yj_line)+'</p>'+
+                                            '<p class="ng-binding ng-scope" style="width:107%;">追加 &nbsp;'+add_money+'</p>'+
+                                       ' </li>'+
+                                       ' <li class="fr">'+
+                                            '<div class="state-gray ng-binding ng-scope" onclick="changes(event);" style="width:107%;margin-top:10px">委托卖出</div>'+
+                                            '<div class="state-red mt5 ng-scope" style="width:107%;">追加</div>'+
+                                            '<div class="state-red mt5 ng-scope" style="width:107%;">止盈调整</div>'+
+                                        '</li>'+
+                                    '</ul>'+
+                                '</div>'+
+                            '</div>';
+                    $("#list_data").prepend(str);
+                $("body").css("height",$("body").height()+170)    
+                var count = 0;
+                for (var i = 0; i < $("div[d]").length; i++) {
+                    console.log()
+                    count += Number($("div[d]").eq(i).attr("d"));
+                }
+                var dy = Math.floor((count /10000) * 30);
+                $("#dy").text(dy); 
+            });
+           function nums(data){
+                if(data!=null){
+                  return data.replace(/\d{1,3}(?=(\d{3})+(\.\d*)?$)/g,'$&,');
+                }else{
+                  return ;
+                }
+          }
+           var count = 0;
+            for (var i = 0; i < $("div[d]").length; i++) {
+                console.log()
+                count += Number($("div[d]").eq(i).attr("d"));
+            }
+            var dy = Math.floor((count /10000) * 30);
+            $("#dy").text(dy); 
+        });
+    var s = 0;
+    function changes(event) {
+        // var ch  = document.getElementsByClassName('ch')[0];
+        // console.log(event);
+        if (s == 0) {
+            event.path[0].style.background =  "#E34C4D";
+            s = 1;
+            return;
+        }else if(s==1){
+            event.path[0].style.background =  "#DBDBDB";
+            s = 0;
+            return;
+        }
+    }
+    var tr_remove = null;
+    document.getElementById('btn_remove').onclick=function() {
+         tr_remove = r_remove;
+    }
+    var r_remove = function (event) {
+             document.getElementById('list_data').removeChild(event.path[4]);
+             a = document.getElementsByTagName('div[d]');
+             tr_remove = null;
+             var count = 0;
+             for (var i = 0; i < a.length; i++) {
+                    count += Number(a[i].getAttribute("d"));
+
+                }
+            var dy = Math.floor((count /10000) * 30);
+
+            document.getElementById("dy").innerHTML = dy; 
+            b = document.getElementsByTagName("body")[0];
+            console.log(b.offsetHeight)
+            if(b.offsetHeight>600){
+            b.style.height = b.offsetHeight - 170+"px";
+            }
+    }
+
+    </script>
+
+
+</body></html>

@@ -1,0 +1,177 @@
+﻿var mobile = localStorage.mobile, pwd = localStorage.pwd;
+//==================我的银行卡
+var list_bank = function () {
+    $.getJSON(api_domain_url + "tools/user_opt_ajax.ashx", { act: "listbank", mobile: mobile, pwd: pwd, t: new Date() }, function (data) {
+        var strHtml = "";
+        // onclick='delBank(" + v.id + ");'
+        if (data.total > 0) {
+            $.each(data.items, function (i, v) {
+                strHtml += "<a class='clearfix ng-scope'>";
+                strHtml += "<span class='icon'><i class='icon-bank-" + v.bank_branch + "'></i></span>";
+                strHtml += "<p class='title ng-binding'>" + v.bank_name + "</p>";
+                strHtml += "<p class='number ng-binding'>" + v.bank_card + "</p>";
+                strHtml += "</a>";
+
+                $("#bankNo").val(v.bank_address);
+                $("#bankAccount").val(v.bank_account_name);
+            });
+            $("#list_data").before(strHtml);
+            $(".bank_total").html(data.total + "张");
+            $("#pay_now").css("display", "block");
+        }
+        else {
+            $("#list_data").show();
+            $(".nav-right").show();
+        }
+    });
+}
+//==================我的银行卡(提现)
+var list_bank_cash = function () {
+    $.getJSON(api_domain_url + "tools/user_opt_ajax.ashx", { act: "listbank", mobile: mobile, pwd: pwd, t: new Date() }, function (data) {
+        var strHtml = "";
+        if (data.total > 0) {
+            $.each(data.items, function (i, v) {
+                if (i == 0) {
+                    $("#tkyhk").val(v.id);
+                }
+                strHtml += "<div class='bank-card mb10 ng-binding' id='" + v.id + "' " + (i == 0 ? "style='color: red; border: 1px solid red;'" : "") + " onclick='ckBank(" + v.id + ");'>";
+                strHtml += "<i class='bank-icon mr10 icon-bank-" + v.bank_branch + "'></i>" + v.bank_name + " " + v.bank_card;
+                strHtml += "</div>";
+            });
+
+        } else {
+            strHtml += "<div class='bank-card mb10 ng-binding'>";
+            strHtml += "<a class='bank-icon mr10' href='../user/account/bankcard.html'>立即绑定银行卡</a>";
+            strHtml += "</div>";
+            location.href = "account/bankcard.html?pay_ck=2";
+        }
+
+        $("#list_data").html(strHtml);
+    });
+}
+
+//==================我的自选股票
+var list_mine_stock = function () {
+    $.getJSON(api_domain_url + "tools/user_opt_ajax.ashx", { act: "list_mine_stock", mobile: mobile, pwd: pwd, t: new Date() }, function (data) {
+        var strHtml = "";
+        if (data.total > 0) {
+            $.each(data.items, function (i, v) {
+                strHtml += "<tr class='ng-scope' onclick='mine_stock_d(\"" + v.stock_code + "\")'>";
+                strHtml += "<td class='ng-binding'>" + v.stock_name + "<p class='ng-binding'>" + v.account_no + "</p></td>";
+                strHtml += "<td class='txt-right price ng-scope'><span class='ng-binding ng-scope " + (v.price_ups >= 0 ? "txt-red" : "txt-green") + "'>" + v.price_now + "</span></td>";
+                strHtml += "<td class='limit ng-scope'><span  class='ng-binding ng-scope " + (v.price_ups >= 0 ? "high" : "low") + "'>" + (v.price_ups >= 0 ? "+" + v.price_ups : "" + v.price_ups) + "%</span></td>";
+                strHtml += "</tr>";
+            });
+
+        } else {
+            $(".mod-stock-add").show();
+        }
+        $("#list_data").html(strHtml);
+    });
+}
+
+//=======================点卖持仓
+var stock_list_sale = function (type_id) {
+    $.getJSON(api_domain_url + "tools/user_opt_ajax.ashx", { act: "stock_list_sale", type_id: type_id, isgetnew: 1, mobile: mobile, pwd: pwd, t: new Date() }, function (data) {
+        if (data.total > 0) {
+            $('#list_data').html(data.items);
+            if (data.money_delay > 0) {
+                $(".money_delay").html("今日递延费总额" + data.money_delay + "元，账户余额" + data.money_balance + "元");
+                $(".money_delay").show();
+            }
+        } else {
+            $('#list_data').html("<div class='mod-no-data ng-scope'>暂无数据</div>");
+        }
+    });
+}
+var stock_list_sale_ref = function (type_id) {
+    $.getJSON(api_domain_url + "tools/user_opt_ajax.ashx", { act: "stock_list_sale", type_id: type_id, isgetnew: 0, mobile: mobile, pwd: pwd, t: new Date() }, function (data) {
+        if (data.total > 0) {
+            $('#list_data').html(data.items);
+            if (data.money_delay > 0) {
+                $(".money_delay").html("今日递延费总额" + data.money_delay + "元，账户余额" + data.money_balance + "元");
+                $(".money_delay").show();
+            }
+        } else {
+            $('#list_data').html("<div class='mod-no-data ng-scope'>暂无数据</div>");
+        }
+    });
+}
+//=======================点卖持仓刷新
+var stock_list_sale_refresh = function (type_id) {
+    $.getJSON(api_domain_url + "tools/api_ajax.ashx", { act: "is_trade_time", rnd: Math.random() }, function (data) {
+        //交易时间内定时刷新
+        if (data.is_trade_time == 0) {
+            setInterval("stock_list_sale_ref(" + type_id + ")", 5000);
+        }
+    });
+}
+
+//=======================交易详情
+var deal_his_d = function () {
+    var id = getUrlParam("id");
+    $.getJSON(api_domain_url + "tools/user_opt_ajax.ashx", { act: "deal_his_d", id: id, mobile: mobile, pwd: pwd, rnd: Math.random() }, function (data) {
+        if (data.status == 0) {
+            layer.open({ content: data.info, skin: 'msg', time: 2 });
+        } else {
+            $(".deal_no").html(data.deal_no);
+            $(".holder_no").html(data.holder_no);
+            $(".account_no").html(data.account_no);
+            $(".user_info").html(data.user_info);
+            $(".borrow_money").html(fMoney(data.borrow_money, 2));
+            $(".money_deposit").html(fMoney(data.money_deposit, 2));
+            $(".price_buy").html(data.price_buy);
+            $(".price_sale").html(data.price_sale);
+            $(".stock_name").html(data.stock_name);
+            $(".stock_code").html(data.stock_code);
+            $(".date_buy").html(data.date_buy);
+            $(".date_sale").html(data.date_sale);
+            $(".profit_money").html(data.profit_money);
+            $(".profit_money_kj").html(data.profit_money > 0 ? 0 : data.profit_money);
+            $(".deal_num").html(data.deal_num);
+            $(".comission_money").html(data.comission_money);
+            $(".money_night_sum").html(data.money_night_sum);
+            $(".money_night_count").html(data.trans_days);
+            $(".return_money").html(fMoney(data.profit_money > 0 ? data.money_deposit : (data.money_deposit + data.profit_money), 2));
+
+            $(".buyCommMoney").html(fMoney(data.BuyCommMoney, 2));
+            $(".selCommMoney").html(fMoney(data.SelCommMoney, 2));
+            $(".selTaxMoney").html(fMoney(data.SelTaxMoney, 2));
+            $(".sysPrfMoney").html(fMoney(data.SysPrfMoney, 2));
+            $(".cusPrfMoney").html(fMoney(data.CusPrfMoney, 2));
+            $(".cusRefMoney").html(fMoney(data.cusRefMoney1, 2));
+
+            $(".exchange_tips").html(data.exchange_tips);
+            $(".exchange_money").html(fMoney(data.exchange_money, 2));
+
+            $(".profit_money_stop").html(data.profit_money_stop > 0 ? fMoney(data.profit_money_stop, 2) + "元" : "无");
+            if (data.profit_money >= 0) {
+                $(".profit_money").addClass("txt-red");
+                $(".profit_money_kj").addClass("txt-red");
+                $(".profit_money_add").addClass("txt-red");
+                $(".profit_money_add").html(data.profit_money);
+            } else {
+                $(".profit_money").addClass("txt-green");
+                $(".profit_money_kj").addClass("txt-green");
+                $(".profit_money_reduce").addClass("txt-green");
+                $(".profit_money_reduce").html(data.profit_money);
+            }
+        }
+    });
+}
+//==================我的银行卡
+var list_bank_pay = function () {
+    $.getJSON(api_domain_url + "tools/user_opt_ajax.ashx", { act: "listbank", mobile: mobile, pwd: pwd, t: new Date() }, function (data) {
+        var strHtml = "";
+        if (data.total > 0) {
+            $.each(data.items, function (i, v) {
+                strHtml += "<option value='" + v.id + "'>" + v.bank_card + "</option>";
+            });
+            $("#bank_id").html(strHtml);
+        } else {
+            location.href = "../account/bankcard.html?pay_ck=2";
+            $("#btn_auth").html("立即绑定银行卡");
+            $("#btn_auth").attr("href", "../../user/account/bankcardlist.html");
+        }
+    });
+}
